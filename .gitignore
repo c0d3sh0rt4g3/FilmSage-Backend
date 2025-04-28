@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Build directories
+build/
+dist/
+
+# Editor directories and files
+.idea/
