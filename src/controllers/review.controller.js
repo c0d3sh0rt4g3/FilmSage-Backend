@@ -191,7 +191,221 @@ const reviewController = {
       res.status(500).json({ message: 'Server error while updating review' });
     }
   },
+  /**
+   * Remove like/dislike from review
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.id - Review ID
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.user_id - User ID
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with status message
+   */
+  removeLike: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { user_id } = req.body;
 
+      const review = await Review.findOne({ _id: id });
+      if (!review) {
+        return res.status(404).json({ message: 'Review not found' });
+      }
+
+      const existingLike = await ReviewLike.findOne({ review_id: id, user_id });
+      if (!existingLike) {
+        return res.status(404).json({ message: 'Like not found' });
+      }
+
+      // Remove the like/dislike
+      await ReviewLike.findOneAndDelete({ review_id: id, user_id });
+
+      // Update counters
+      if (existingLike.is_like) {
+        await Review.findOneAndUpdate(
+          { _id: id },
+          { $inc: { likes_count: -1 } }
+        );
+      } else {
+        await Review.findOneAndUpdate(
+          { _id: id },
+          { $inc: { dislikes_count: -1 } }
+        );
+      }
+
+      res.status(200).json({ message: 'Like removed successfully' });
+    } catch (error) {
+      console.error('Error removing like:', error);
+      res.status(500).json({ message: 'Server error while removing like' });
+    }
+  },
+
+  /**
+   * Update comment
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.commentId - Comment ID
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.content - New comment content
+   * @param {Object} req.user - Authenticated user info
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with updated comment data
+   */
+  updateComment: async (req, res) => {
+    try {
+      const { commentId } = req.params;
+      const { content } = req.body;
+
+      const comment = await ReviewComment.findOne({ _id: commentId });
+      if (!comment) {
+        return res.status(404).json({ message: 'Comment not found' });
+      }
+
+      if (req.user && req.user.role !== 'admin' && req.user.id !== comment.user_id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to update this comment' });
+      }
+
+      const updatedComment = await ReviewComment.findOneAndUpdate(
+        { _id: commentId },
+        { content },
+        { new: true }
+      );
+
+      res.status(200).json({
+        message: 'Comment updated successfully',
+        comment: updatedComment
+      });
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      res.status(500).json({ message: 'Server error while updating comment' });
+    }
+  },
+
+  /**
+   * Delete comment
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.commentId - Comment ID
+   * @param {Object} req.user - Authenticated user info
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with status message
+   */
+  deleteComment: async (req, res) => {
+    try {
+      const { commentId } = req.params;
+
+      const comment = await ReviewComment.findOne({ _id: commentId });
+      if (!comment) {
+        return res.status(404).json({ message: 'Comment not found' });
+      }
+
+      if (req.user && req.user.role !== 'admin' && req.user.id !== comment.user_id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to delete this comment' });
+      }
+
+      await ReviewComment.findOneAndDelete({ _id: commentId });
+      res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      res.status(500).json({ message: 'Server error while deleting comment' });
+    }
+  },
+
+  /**
+   * Approve review (admin only)
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.id - Review ID
+   * @param {Object} req.user - Authenticated user info
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with status message
+   */
+  approveReview: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (req.user && req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to approve reviews' });
+      }
+
+      const review = await Review.findOne({ _id: id });
+      if (!review) {
+        return res.status(404).json({ message: 'Review not found' });
+      }
+
+      await Review.findOneAndUpdate(
+        { _id: id },
+        { is_approved: true }
+      );
+
+      res.status(200).json({ message: 'Review approved successfully' });
+    } catch (error) {
+      console.error('Error approving review:', error);
+      res.status(500).json({ message: 'Server error while approving review' });
+    }
+  },
+
+  /**
+   * Reject review (admin only)
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.id - Review ID
+   * @param {Object} req.user - Authenticated user info
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with status message
+   */
+  rejectReview: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (req.user && req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to reject reviews' });
+      }
+
+      const review = await Review.findOne({ _id: id });
+      if (!review) {
+        return res.status(404).json({ message: 'Review not found' });
+      }
+
+      await Review.findOneAndUpdate(
+        { _id: id },
+        { is_approved: false }
+      );
+
+      res.status(200).json({ message: 'Review rejected successfully' });
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+      res.status(500).json({ message: 'Server error while rejecting review' });
+    }
+  },
+
+  /**
+   * Get reviews by user ID
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.userId - User ID
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with user reviews data
+   */
+  getUserReviews: async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      const reviews = await Review.find({ user_id: userId })
+        .populate('user_id', 'username role')
+        .sort({ created_at: -1 });
+
+      res.status(200).json({ reviews });
+    } catch (error) {
+      console.error('Error fetching user reviews:', error);
+      res.status(500).json({ message: 'Server error while fetching user reviews' });
+    }
+  },
   /**
    * Delete review
    * @async

@@ -1,9 +1,9 @@
-import UserRating from '../models/userRating.model.js';
-import UserWatchlist from '../models/userWatchlist.model.js';
-import UserFavorite from '../models/userFavorite.model.js';
-import UserFollow from '../models/userFollow.model.js';
-import UserActivity from '../models/userActivity.model.js';
-import User from '../models/user.model.js';
+import UserRating from '../models/user/userRating.model.js';
+import UserWatchlist from '../models/user/userWatchlist.model.js';
+import UserFavorite from '../models/user/userFavorite.model.js';
+import UserFollow from '../models/user/userFollow.model.js';
+import UserActivity from '../models/user/userActivity.model.js';
+import User from '../models/user/user.model.js';
 
 /**
  * User interaction controller containing methods for user interactions management
