@@ -1,5 +1,5 @@
 // controllers/userController.js
-import User from '../models/user.model.js';
+import User from '../models/user/user.model.js';
 import bcrypt from 'bcrypt';
 import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';

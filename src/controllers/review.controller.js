@@ -1,7 +1,7 @@
 import Review from '../models/review/review.model.js';
 import ReviewLike from '../models/review/reviewLike.model.js';
 import ReviewComment from '../models/review/reviewComment.model.js';
-import User from '../models/user.model.js';
+import User from '../models/user/user.model.js';
 
 /**
  * Review controller containing methods for review management

@@ -1,5 +1,5 @@
 import Profile from '../models/profile.model.js';
-import User from '../models/user.model.js';
+import User from '../models/user/user.model.js';
 
 /**
  * Profile controller containing methods for profile management
