@@ -9,11 +9,6 @@ app.use(express.json());
 // Define the port
 const PORT = 3000;
 
-// Create a basic route
-app.get('/', (req, res) => {
-  res.send('Hello, Express!');
-});
-
 app.use('/users', userRoutes);
 
 // Start the server
