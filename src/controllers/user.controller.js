@@ -1,8 +1,6 @@
-// controllers/userController.js
 import User from '../models/user/user.model.js';
 import bcrypt from 'bcrypt';
 import { validationResult } from 'express-validator';
-import { Op } from 'sequelize';
 
 /**
  * User controller containing methods for user management
@@ -31,11 +29,9 @@ const userController = {
 
       const { username, email, password, role = 'user' } = req.body;
 
-      // Check if user already exists
+      // Check if user already exists - SINTAXIS MONGOOSE
       const existingUser = await User.findOne({
-        where: {
-          [Op.or]: [{ email }, { username }]
-        }
+        $or: [{ email }, { username }]
       });
 
       if (existingUser) {
@@ -53,8 +49,8 @@ const userController = {
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password, salt);
 
-      // Create user
-      const createUser = await User.create({
+      // Create user - SINTAXIS MONGOOSE
+      const newUser = new User({
         username,
         email,
         password_hash,
@@ -62,8 +58,10 @@ const userController = {
         is_active: true
       });
 
+      const savedUser = await newUser.save();
+
       // Remove password from response
-      const userResponse = { ...createUser.get() };
+      const userResponse = savedUser.toObject();
       delete userResponse.password_hash;
 
       res.status(201).json({
@@ -90,8 +88,8 @@ const userController = {
     try {
       const { email, password } = req.body;
 
-      // Find user
-      const user = await User.findOne({ where: { email } });
+      // Find user - SINTAXIS MONGOOSE
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
@@ -111,7 +109,7 @@ const userController = {
       res.status(200).json({
         message: 'Login successful',
         user: {
-          id: user.id,
+          id: user._id,
           username: user.username,
           email: user.email,
           role: user.role
@@ -132,7 +130,8 @@ const userController = {
    */
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find({});
+      // SINTAXIS MONGOOSE - excluir password_hash
+      const users = await User.find({}, '-password_hash');
 
       res.status(200).json({ users });
     } catch (error) {
@@ -154,7 +153,8 @@ const userController = {
     try {
       const { id } = req.params;
 
-      const user = await User.findOne({ _id: id });
+      // SINTAXIS MONGOOSE
+      const user = await User.findById(id, '-password_hash');
 
       if (!user) {
         return res.status(404).json({ message: `User with id ${id} not found` });
@@ -187,14 +187,14 @@ const userController = {
       const { id } = req.params;
       const { username, email, role, is_active } = req.body;
 
-      // Find user
-      const user = await User.findByPk(id);
+      // Find user - SINTAXIS MONGOOSE
+      const user = await User.findById(id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
 
       // Check permissions (user can update own profile, admin can update any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(id)) {
+      if (req.user && req.user.role !== 'admin' && req.user.id !== id) {
         return res.status(403).json({ message: 'Not authorized to update this user' });
       }
 
@@ -213,17 +213,21 @@ const userController = {
         }
       }
 
-      // Update user
-      await user.update(updateData);
+      // Update user - SINTAXIS MONGOOSE
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, select: '-password_hash' }
+      );
 
       res.status(200).json({
         message: 'User updated successfully',
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          is_active: user.is_active
+          id: updatedUser._id,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          is_active: updatedUser.is_active
         }
       });
     } catch (error) {
@@ -250,14 +254,14 @@ const userController = {
       const { id } = req.params;
       const { currentPassword, newPassword } = req.body;
 
-      // Find user
-      const user = await User.findByPk(id);
+      // Find user - SINTAXIS MONGOOSE
+      const user = await User.findById(id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
 
       // Check permissions (user can change own password, admin can change any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(id)) {
+      if (req.user && req.user.role !== 'admin' && req.user.id !== id) {
         return res.status(403).json({ message: 'Not authorized to change this password' });
       }
 
@@ -273,8 +277,8 @@ const userController = {
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(newPassword, salt);
 
-      // Update password
-      await user.update({ password_hash });
+      // Update password - SINTAXIS MONGOOSE
+      await User.findByIdAndUpdate(id, { password_hash });
 
       res.status(200).json({ message: 'Password changed successfully' });
     } catch (error) {
@@ -297,7 +301,8 @@ const userController = {
     try {
       const { id } = req.params;
 
-      const user = await User.findByPk(id);
+      // SINTAXIS MONGOOSE
+      const user = await User.findByIdAndDelete(id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -307,7 +312,6 @@ const userController = {
         return res.status(403).json({ message: 'Not authorized to delete users' });
       }
 
-      await user.destroy();
       res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -336,7 +340,13 @@ const userController = {
         return res.status(400).json({ message: 'Invalid role specified' });
       }
 
-      const user = await User.findByPk(id);
+      // SINTAXIS MONGOOSE
+      const user = await User.findByIdAndUpdate(
+        id,
+        { role },
+        { new: true, select: '-password_hash' }
+      );
+
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -346,12 +356,10 @@ const userController = {
         return res.status(403).json({ message: 'Not authorized to change user roles' });
       }
 
-      await user.update({ role });
-
       res.status(200).json({
         message: 'User role updated successfully',
         user: {
-          id: user.id,
+          id: user._id,
           username: user.username,
           role: user.role
         }
@@ -376,7 +384,13 @@ const userController = {
     try {
       const { id } = req.params;
 
-      const user = await User.findByPk(id);
+      // SINTAXIS MONGOOSE
+      const user = await User.findByIdAndUpdate(
+        id,
+        { is_active: true },
+        { new: true }
+      );
+
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -385,8 +399,6 @@ const userController = {
       if (req.user && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Not authorized to activate users' });
       }
-
-      await user.update({ is_active: true });
 
       res.status(200).json({ message: 'User activated successfully' });
     } catch (error) {
@@ -409,7 +421,13 @@ const userController = {
     try {
       const { id } = req.params;
 
-      const user = await User.findByPk(id);
+      // SINTAXIS MONGOOSE
+      const user = await User.findByIdAndUpdate(
+        id,
+        { is_active: false },
+        { new: true }
+      );
+
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -418,8 +436,6 @@ const userController = {
       if (req.user && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Not authorized to deactivate users' });
       }
-
-      await user.update({ is_active: false });
 
       res.status(200).json({ message: 'User deactivated successfully' });
     } catch (error) {
