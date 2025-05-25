@@ -1,6 +1,5 @@
 import Profile from '../models/profile.model.js';
 import User from '../models/user.model.js';
-import { validationResult } from 'express-validator';
 
 /**
  * Profile controller containing methods for profile management
@@ -12,7 +11,7 @@ const profileController = {
    * @async
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
-   * @param {number} req.body.user_id - User ID for the profile
+   * @param {string} req.body.user_id - User ID for the profile
    * @param {string} [req.body.full_name] - Full name of the user
    * @param {string} [req.body.display_name] - Display name or nickname
    * @param {string} [req.body.bio] - User biography
@@ -28,12 +27,6 @@ const profileController = {
    */
   createProfile: async (req, res) => {
     try {
-      // Validate request
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
       const {
         user_id,
         full_name,
@@ -48,21 +41,18 @@ const profileController = {
         favorite_genres
       } = req.body;
 
-      // Check if user exists
-      const user = await User.findByPk(user_id);
+      const user = await User.findOne({ _id: user_id });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      // Check if profile already exists for this user
-      const existingProfile = await Profile.findOne({ where: { user_id } });
+      const existingProfile = await Profile.findOne({ user_id });
       if (existingProfile) {
         return res.status(409).json({
           message: 'Profile already exists for this user'
         });
       }
 
-      // Create profile
       const newProfile = await Profile.create({
         user_id,
         full_name,
@@ -74,7 +64,7 @@ const profileController = {
         birth_date,
         nationality,
         address,
-        favorite_genres: favorite_genres ? JSON.stringify(favorite_genres) : null
+        favorite_genres
       });
 
       res.status(201).json({
@@ -97,12 +87,7 @@ const profileController = {
    */
   getAllProfiles: async (req, res) => {
     try {
-      const profiles = await Profile.findAll({
-        include: [{
-          model: User,
-          attributes: ['id', 'username', 'email', 'role']
-        }]
-      });
+      const profiles = await Profile.find({}).populate('user_id', 'username email role');
 
       res.status(200).json({ profiles });
     } catch (error) {
@@ -124,25 +109,10 @@ const profileController = {
     try {
       const { userId } = req.params;
 
-      const profile = await Profile.findOne({
-        where: { user_id: userId },
-        include: [{
-          model: User,
-          attributes: ['id', 'username', 'email', 'role', 'created_at']
-        }]
-      });
+      const profile = await Profile.findOne({ user_id: userId }).populate('user_id', 'username email role created_at');
 
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found' });
-      }
-
-      // Parse favorite_genres if it exists
-      if (profile.favorite_genres) {
-        try {
-          profile.favorite_genres = JSON.parse(profile.favorite_genres);
-        } catch (e) {
-          profile.favorite_genres = [];
-        }
       }
 
       res.status(200).json({ profile });
@@ -165,24 +135,10 @@ const profileController = {
     try {
       const { id } = req.params;
 
-      const profile = await Profile.findByPk(id, {
-        include: [{
-          model: User,
-          attributes: ['id', 'username', 'email', 'role', 'created_at']
-        }]
-      });
+      const profile = await Profile.findOne({ _id: id }).populate('user_id', 'username email role created_at');
 
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found' });
-      }
-
-      // Parse favorite_genres if it exists
-      if (profile.favorite_genres) {
-        try {
-          profile.favorite_genres = JSON.parse(profile.favorite_genres);
-        } catch (e) {
-          profile.favorite_genres = [];
-        }
       }
 
       res.status(200).json({ profile });
@@ -229,18 +185,15 @@ const profileController = {
         favorite_genres
       } = req.body;
 
-      // Find profile
-      const profile = await Profile.findOne({ where: { user_id: userId } });
+      const profile = await Profile.findOne({ user_id: userId });
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found' });
       }
 
-      // Check permissions (user can update own profile, admin can update any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(userId)) {
+      if (req.user && req.user.role !== 'admin' && req.user.id !== userId) {
         return res.status(403).json({ message: 'Not authorized to update this profile' });
       }
 
-      // Prepare update data
       const updateData = {};
       if (full_name !== undefined) updateData.full_name = full_name;
       if (display_name !== undefined) updateData.display_name = display_name;
@@ -251,27 +204,17 @@ const profileController = {
       if (birth_date !== undefined) updateData.birth_date = birth_date;
       if (nationality !== undefined) updateData.nationality = nationality;
       if (address !== undefined) updateData.address = address;
-      if (favorite_genres !== undefined) {
-        updateData.favorite_genres = Array.isArray(favorite_genres)
-          ? JSON.stringify(favorite_genres)
-          : favorite_genres;
-      }
+      if (favorite_genres !== undefined) updateData.favorite_genres = favorite_genres;
 
-      // Update profile
-      await profile.update(updateData);
-
-      // Parse favorite_genres for response
-      if (profile.favorite_genres) {
-        try {
-          profile.favorite_genres = JSON.parse(profile.favorite_genres);
-        } catch (e) {
-          profile.favorite_genres = [];
-        }
-      }
+      const updatedProfile = await Profile.findOneAndUpdate(
+        { user_id: userId },
+        updateData,
+        { new: true }
+      );
 
       res.status(200).json({
         message: 'Profile updated successfully',
-        profile
+        profile: updatedProfile
       });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -293,17 +236,16 @@ const profileController = {
     try {
       const { userId } = req.params;
 
-      const profile = await Profile.findOne({ where: { user_id: userId } });
+      const profile = await Profile.findOne({ user_id: userId });
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found' });
       }
 
-      // Check permissions (user can delete own profile, admin can delete any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== parseInt(userId)) {
+      if (req.user && req.user.role !== 'admin' && req.user.id !== userId) {
         return res.status(403).json({ message: 'Not authorized to delete this profile' });
       }
 
-      await profile.destroy();
+      await Profile.findOneAndDelete({ user_id: userId });
       res.status(200).json({ message: 'Profile deleted successfully' });
     } catch (error) {
       console.error('Error deleting profile:', error);
@@ -330,25 +272,27 @@ const profileController = {
         return res.status(400).json({ message: 'Search term is required' });
       }
 
-      const profiles = await Profile.findAndCountAll({
-        where: {
-          [Op.or]: [
-            { full_name: { [Op.iLike]: `%${search}%` } },
-            { display_name: { [Op.iLike]: `%${search}%` } }
-          ]
-        },
-        include: [{
-          model: User,
-          attributes: ['id', 'username', 'role']
-        }],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
-        order: [['created_at', 'DESC']]
+      const profiles = await Profile.find({
+        $or: [
+          { full_name: { $regex: search, $options: 'i' } },
+          { display_name: { $regex: search, $options: 'i' } }
+        ]
+      })
+      .populate('user_id', 'username role')
+      .limit(parseInt(limit))
+      .skip(parseInt(offset))
+      .sort({ created_at: -1 });
+
+      const total = await Profile.countDocuments({
+        $or: [
+          { full_name: { $regex: search, $options: 'i' } },
+          { display_name: { $regex: search, $options: 'i' } }
+        ]
       });
 
       res.status(200).json({
-        profiles: profiles.rows,
-        total: profiles.count,
+        profiles,
+        total,
         limit: parseInt(limit),
         offset: parseInt(offset)
       });
@@ -371,19 +315,17 @@ const profileController = {
     try {
       const { userId } = req.params;
 
-      const profile = await Profile.findOne({ where: { user_id: userId } });
+      const profile = await Profile.findOne({ user_id: userId });
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found' });
       }
 
-      // Here you would calculate stats based on other tables
-      // For now, returning basic profile info
       const stats = {
         profile_created: profile.created_at,
         last_updated: profile.updated_at,
         has_avatar: !!profile.avatar_url,
         has_bio: !!profile.bio,
-        profile_completion: this.calculateProfileCompletion(profile)
+        favorite_genres_count: profile.favorite_genres ? profile.favorite_genres.length : 0
       };
 
       res.status(200).json({ stats });
