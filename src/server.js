@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from "./routes/user.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
 import {connectDB} from "./config/db.js";
 
 // Create an Express application
@@ -10,6 +11,7 @@ app.use(express.json());
 const PORT = 3000;
 
 app.use('/users', userRoutes);
+app.use('/profiles', profileRoutes);
 
 // Start the server
 app.listen(PORT, async () => {
