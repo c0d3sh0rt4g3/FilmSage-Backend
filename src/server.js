@@ -14,7 +14,8 @@ const PORT = 3000;
 // Orígenes permitidos - CORREGIDO
 const allowedOrigins = [
     "http://localhost:5173",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://filmsage-frontend.onrender.com"
 ];
 
 // Configuración CORS mejorada
