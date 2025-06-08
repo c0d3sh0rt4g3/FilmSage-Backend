@@ -1,6 +1,7 @@
 import User from '../models/user/user.model.js';
 import bcrypt from 'bcrypt';
 import { validationResult } from 'express-validator';
+import { generateToken } from '../config/jwt.config.js';
 
 /**
  * User controller containing methods for user management
@@ -64,8 +65,12 @@ const userController = {
       const userResponse = savedUser.toObject();
       delete userResponse.password_hash;
 
+      // Generate JWT token
+      const token = generateToken(savedUser);
+
       res.status(201).json({
         message: 'User registered successfully',
+        token,
         user: userResponse
       });
     } catch (error) {
@@ -105,9 +110,12 @@ const userController = {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      // For now, just return user info without JWT
+      // Generate JWT token
+      const token = generateToken(user);
+
       res.status(200).json({
         message: 'Login successful',
+        token,
         user: {
           id: user._id,
           username: user.username,

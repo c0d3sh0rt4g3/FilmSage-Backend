@@ -1,8 +1,11 @@
-
 import { Router } from 'express';
 import profileController from '../controllers/profile.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 router.post('/', profileController.createProfile);
 router.get('/', profileController.getAllProfiles);

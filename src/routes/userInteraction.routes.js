@@ -1,8 +1,12 @@
 // routes/userInteraction.routes.js
 import { Router } from 'express';
 import userInteractionController from '../controllers/userInteraction.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 // Rating routes
 router.post('/ratings', userInteractionController.addRating);
