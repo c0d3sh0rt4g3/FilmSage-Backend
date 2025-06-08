@@ -120,7 +120,8 @@ const userController = {
           id: user._id,
           username: user.username,
           email: user.email,
-          role: user.role
+          role: user.role,
+          favorite_genres: user.favorite_genres
         }
       });
     } catch (error) {
@@ -193,7 +194,7 @@ const userController = {
   updateUser: async (req, res) => {
     try {
       const { id } = req.params;
-      const { username, email, role, is_active } = req.body;
+      const { username, email, role, is_active, favorite_genres } = req.body;
 
       // Find user - SINTAXIS MONGOOSE
       const user = await User.findById(id);
@@ -210,6 +211,15 @@ const userController = {
       const updateData = {};
       if (username) updateData.username = username;
       if (email) updateData.email = email;
+      
+      // Users can update their own favorite genres
+      if (favorite_genres !== undefined) {
+        if (Array.isArray(favorite_genres)) {
+          updateData.favorite_genres = favorite_genres;
+        } else {
+          return res.status(400).json({ message: 'favorite_genres must be an array' });
+        }
+      }
 
       // Only admin can change role and active status
       if (req.user && req.user.role === 'admin') {
@@ -235,7 +245,8 @@ const userController = {
           username: updatedUser.username,
           email: updatedUser.email,
           role: updatedUser.role,
-          is_active: updatedUser.is_active
+          is_active: updatedUser.is_active,
+          favorite_genres: updatedUser.favorite_genres
         }
       });
     } catch (error) {
