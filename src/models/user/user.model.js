@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
+  // Authentication fields
   username: {
     type: String,
     unique: true,
@@ -26,6 +27,43 @@ const userSchema = new mongoose.Schema({
   is_active: {
     type: Boolean,
     default: true,
+  },
+  
+  // Profile fields (all optional)
+  full_name: {
+    type: String,
+    trim: true,
+  },
+  display_name: {
+    type: String,
+    trim: true,
+  },
+  bio: {
+    type: String,
+    trim: true,
+  },
+  avatar_url: {
+    type: String,
+    trim: true,
+  },
+  phone: {
+    type: String,
+    trim: true,
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
+  },
+  birth_date: {
+    type: Date,
+  },
+  nationality: {
+    type: String,
+    trim: true,
+  },
+  address: {
+    type: String,
+    trim: true,
   },
   favorite_genres: {
     type: [String],

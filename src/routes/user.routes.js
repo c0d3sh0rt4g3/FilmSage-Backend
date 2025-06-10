@@ -12,8 +12,11 @@ router.post('/login', userController.login);
 router.use(authenticateToken);
 
 // Protected routes that require authentication
+router.get('/search', userController.searchUsers);
 router.get('/:id', userController.getUserById);
+router.get('/:id/stats', userController.getUserStats);
 router.put('/:id', userController.updateUser);
+router.patch('/:id/password', userController.changePassword);
 
 // Admin-only routes
 router.get('/', authorizeRole(['admin']), userController.getAllUsers);

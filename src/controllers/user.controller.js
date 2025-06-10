@@ -194,7 +194,22 @@ const userController = {
   updateUser: async (req, res) => {
     try {
       const { id } = req.params;
-      const { username, email, role, is_active, favorite_genres } = req.body;
+      const { 
+        username, 
+        email, 
+        role, 
+        is_active, 
+        favorite_genres,
+        full_name,
+        display_name,
+        bio,
+        avatar_url,
+        phone,
+        gender,
+        birth_date,
+        nationality,
+        address
+      } = req.body;
 
       // Find user - SINTAXIS MONGOOSE
       const user = await User.findById(id);
@@ -209,10 +224,22 @@ const userController = {
 
       // Prepare update data
       const updateData = {};
+      
+      // Basic user fields
       if (username) updateData.username = username;
       if (email) updateData.email = email;
       
-      // Users can update their own favorite genres
+      // Profile fields (users can update their own profile)
+      if (full_name !== undefined) updateData.full_name = full_name;
+      if (display_name !== undefined) updateData.display_name = display_name;
+      if (bio !== undefined) updateData.bio = bio;
+      if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
+      if (phone !== undefined) updateData.phone = phone;
+      if (gender !== undefined) updateData.gender = gender;
+      if (birth_date !== undefined) updateData.birth_date = birth_date;
+      if (nationality !== undefined) updateData.nationality = nationality;
+      if (address !== undefined) updateData.address = address;
+      
       if (favorite_genres !== undefined) {
         if (Array.isArray(favorite_genres)) {
           updateData.favorite_genres = favorite_genres;
@@ -240,14 +267,7 @@ const userController = {
 
       res.status(200).json({
         message: 'User updated successfully',
-        user: {
-          id: updatedUser._id,
-          username: updatedUser.username,
-          email: updatedUser.email,
-          role: updatedUser.role,
-          is_active: updatedUser.is_active,
-          favorite_genres: updatedUser.favorite_genres
-        }
+        user: updatedUser
       });
     } catch (error) {
       console.error('Error updating user:', error);
@@ -461,6 +481,109 @@ const userController = {
       console.error('Error deactivating user:', error);
       res.status(500).json({ message: 'Server error while deactivating user' });
     }
+  },
+
+  /**
+   * Search users by display name, full name, or username
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} req.query.search - Search term
+   * @param {number} [req.query.limit=10] - Number of results to return
+   * @param {number} [req.query.offset=0] - Number of results to skip
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with search results
+   */
+  searchUsers: async (req, res) => {
+    try {
+      const { search, limit = 10, offset = 0 } = req.query;
+
+      if (!search) {
+        return res.status(400).json({ message: 'Search term is required' });
+      }
+
+      const users = await User.find({
+        is_active: true,
+        $or: [
+          { full_name: { $regex: search, $options: 'i' } },
+          { display_name: { $regex: search, $options: 'i' } },
+          { username: { $regex: search, $options: 'i' } }
+        ]
+      })
+      .select('-password_hash')
+      .limit(parseInt(limit))
+      .skip(parseInt(offset))
+      .sort({ created_at: -1 });
+
+      const total = await User.countDocuments({
+        is_active: true,
+        $or: [
+          { full_name: { $regex: search, $options: 'i' } },
+          { display_name: { $regex: search, $options: 'i' } },
+          { username: { $regex: search, $options: 'i' } }
+        ]
+      });
+
+      res.status(200).json({
+        users,
+        total,
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
+    } catch (error) {
+      console.error('Error searching users:', error);
+      res.status(500).json({ message: 'Server error while searching users' });
+    }
+  },
+
+  /**
+   * Get user statistics
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.id - User ID
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with user statistics
+   */
+  getUserStats: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const user = await User.findById(id).select('-password_hash');
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const stats = {
+        user_created: user.created_at,
+        last_updated: user.updated_at,
+        has_avatar: !!user.avatar_url,
+        has_bio: !!user.bio,
+        has_full_name: !!user.full_name,
+        favorite_genres_count: user.favorite_genres ? user.favorite_genres.length : 0,
+        profile_completion: this.calculateProfileCompletion(user)
+      };
+
+      res.status(200).json({ stats });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      res.status(500).json({ message: 'Server error while fetching user stats' });
+    }
+  },
+
+  /**
+   * Calculate profile completion percentage
+   * @param {Object} user - User object
+   * @returns {number} Profile completion percentage
+   */
+  calculateProfileCompletion: (user) => {
+    const fields = [
+      'full_name', 'display_name', 'bio', 'avatar_url', 
+      'phone', 'gender', 'birth_date', 'nationality', 'address'
+    ];
+    
+    const completedFields = fields.filter(field => user[field] && user[field] !== '').length;
+    return Math.round((completedFields / fields.length) * 100);
   }
 };
 
