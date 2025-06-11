@@ -11,6 +11,8 @@ router.use(authenticateToken);
 // Rating routes
 router.post('/ratings', userInteractionController.addRating);
 router.get('/ratings/user/:userId', userInteractionController.getUserRatings);
+router.get('/ratings/user/:userId/from-reviews', userInteractionController.getUserRatingsFromReviews); // Get ratings from reviews
+router.get('/ratings/all', userInteractionController.getAllRatings); // Debug endpoint
 router.delete('/ratings/:userId/:tmdbId/:contentType', userInteractionController.removeRating);
 
 // Watchlist routes

@@ -4,6 +4,7 @@ import UserFavorite from '../models/user/userFavorite.model.js';
 import UserFollow from '../models/user/userFollow.model.js';
 import UserActivity from '../models/user/userActivity.model.js';
 import User from '../models/user/user.model.js';
+import Review from '../models/review/review.model.js';
 
 /**
  * User interaction controller containing methods for user interactions management
@@ -86,13 +87,94 @@ const userInteractionController = {
   getUserRatings: async (req, res) => {
     try {
       const { userId } = req.params;
+      console.log('Getting ratings for user:', userId);
 
       const ratings = await UserRating.find({ user_id: userId }).sort({ created_at: -1 });
+      console.log('Found ratings:', ratings.length);
 
-      res.status(200).json({ ratings });
+      // Calculate average rating if there are ratings
+      let averageRating = 0;
+      if (ratings.length > 0) {
+        const sum = ratings.reduce((acc, rating) => acc + rating.rating, 0);
+        averageRating = parseFloat((sum / ratings.length).toFixed(2));
+      }
+
+      res.status(200).json({ 
+        ratings,
+        total: ratings.length,
+        averageRating: averageRating
+      });
     } catch (error) {
       console.error('Error fetching ratings:', error);
       res.status(500).json({ message: 'Server error while fetching ratings' });
+    }
+  },
+
+  /**
+   * Get user ratings from reviews (this is probably what you want)
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Request parameters
+   * @param {string} req.params.userId - User ID
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with ratings from reviews
+   */
+  getUserRatingsFromReviews: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      console.log('Getting ratings from reviews for user:', userId);
+
+      const reviews = await Review.find({ user_id: userId }).sort({ created_at: -1 });
+      console.log('Found reviews with ratings:', reviews.length);
+
+      // Extract ratings from reviews
+      const ratings = reviews.map(review => ({
+        _id: review._id,
+        user_id: review.user_id,
+        tmdb_id: review.tmdb_id,
+        content_type: review.content_type,
+        rating: review.rating,
+        created_at: review.created_at,
+        title: review.title // Include review title for context
+      }));
+
+      // Calculate average rating
+      let averageRating = 0;
+      if (ratings.length > 0) {
+        const sum = ratings.reduce((acc, rating) => acc + rating.rating, 0);
+        averageRating = parseFloat((sum / ratings.length).toFixed(2));
+      }
+
+      res.status(200).json({ 
+        ratings,
+        total: ratings.length,
+        averageRating: averageRating
+      });
+    } catch (error) {
+      console.error('Error fetching ratings from reviews:', error);
+      res.status(500).json({ message: 'Server error while fetching ratings from reviews' });
+    }
+  },
+
+  /**
+   * Get all ratings (for debugging)
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @returns {Object} JSON response with all ratings data
+   */
+  getAllRatings: async (req, res) => {
+    try {
+      const ratings = await UserRating.find({}).sort({ created_at: -1 });
+      console.log('Total ratings in database:', ratings.length);
+
+      res.status(200).json({ 
+        ratings,
+        total: ratings.length
+      });
+    } catch (error) {
+      console.error('Error fetching all ratings:', error);
+      res.status(500).json({ message: 'Server error while fetching all ratings' });
     }
   },
 
