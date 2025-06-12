@@ -16,16 +16,17 @@ const userInteractionController = {
    * @async
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
-   * @param {string} req.body.user_id - User ID
    * @param {number} req.body.tmdb_id - TMDB ID
    * @param {string} req.body.content_type - Content type (movie or series)
    * @param {number} req.body.rating - Rating from 1 to 5
+   * @param {Object} req.user - Authenticated user info
    * @param {Object} res - Express response object
    * @returns {Object} JSON response with rating data or error message
    */
   addRating: async (req, res) => {
     try {
-      const { user_id, tmdb_id, content_type, rating } = req.body;
+      const { tmdb_id, content_type, rating } = req.body;
+      const user_id = req.user.id; // Get user_id from authenticated user
 
       const existingRating = await UserRating.findOne({ user_id, tmdb_id, content_type });
 
@@ -183,16 +184,17 @@ const userInteractionController = {
    * @async
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
-   * @param {string} req.body.user_id - User ID
    * @param {number} req.body.tmdb_id - TMDB ID
    * @param {string} req.body.content_type - Content type (movie or series)
    * @param {string} [req.body.status] - Watchlist status
+   * @param {Object} req.user - Authenticated user info
    * @param {Object} res - Express response object
    * @returns {Object} JSON response with watchlist data or error message
    */
   addToWatchlist: async (req, res) => {
     try {
-      const { user_id, tmdb_id, content_type, status = 'want_to_watch' } = req.body;
+      const { tmdb_id, content_type, status = 'want_to_watch' } = req.body;
+      const user_id = req.user.id; // Get user_id from authenticated user
 
       const existingItem = await UserWatchlist.findOne({ user_id, tmdb_id, content_type });
 
@@ -290,15 +292,16 @@ const userInteractionController = {
    * @async
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
-   * @param {string} req.body.user_id - User ID
    * @param {number} req.body.tmdb_id - TMDB ID
    * @param {string} req.body.content_type - Content type (movie or series)
+   * @param {Object} req.user - Authenticated user info
    * @param {Object} res - Express response object
    * @returns {Object} JSON response with favorite data or error message
    */
   addToFavorites: async (req, res) => {
     try {
-      const { user_id, tmdb_id, content_type } = req.body;
+      const { tmdb_id, content_type } = req.body;
+      const user_id = req.user.id; // Get user_id from authenticated user
 
       const existingFavorite = await UserFavorite.findOne({ user_id, tmdb_id, content_type });
 
@@ -446,16 +449,17 @@ const userInteractionController = {
    * @async
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
-   * @param {string} req.body.follower_id - Follower user ID
    * @param {string} req.body.followed_id - Followed user ID
+   * @param {Object} req.user - Authenticated user info
    * @param {Object} res - Express response object
    * @returns {Object} JSON response with follow data or error message
    */
   followUser: async (req, res) => {
     try {
-      const { follower_id, followed_id } = req.body;
+      const { followed_id } = req.body;
+      const follower_id = req.user.id; // Get follower_id from authenticated user
 
-      if (follower_id === followed_id) {
+      if (follower_id.toString() === followed_id) {
         return res.status(400).json({ message: 'Cannot follow yourself' });
       }
 

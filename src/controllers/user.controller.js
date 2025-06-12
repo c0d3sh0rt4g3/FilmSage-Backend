@@ -218,7 +218,9 @@ const userController = {
       }
 
       // Check permissions (user can update own profile, admin can update any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== id) {
+      // Convert ObjectId to string for comparison
+      const userIdString = req.user.id.toString();
+      if (req.user && req.user.role !== 'admin' && userIdString !== id) {
         return res.status(403).json({ message: 'Not authorized to update this user' });
       }
 
@@ -300,7 +302,9 @@ const userController = {
       }
 
       // Check permissions (user can change own password, admin can change any)
-      if (req.user && req.user.role !== 'admin' && req.user.id !== id) {
+      // Convert ObjectId to string for comparison
+      const userIdString = req.user.id.toString();
+      if (req.user && req.user.role !== 'admin' && userIdString !== id) {
         return res.status(403).json({ message: 'Not authorized to change this password' });
       }
 
@@ -379,21 +383,23 @@ const userController = {
         return res.status(400).json({ message: 'Invalid role specified' });
       }
 
+      // Check if user exists first
+      const existingUser = await User.findById(id);
+      if (!existingUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Only admin can change roles - Check BEFORE updating
+      if (req.user && req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized to change user roles' });
+      }
+
       // SINTAXIS MONGOOSE
       const user = await User.findByIdAndUpdate(
         id,
         { role },
         { new: true, select: '-password_hash' }
       );
-
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Only admin can change roles
-      if (req.user && req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Not authorized to change user roles' });
-      }
 
       res.status(200).json({
         message: 'User role updated successfully',
