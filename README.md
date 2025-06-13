@@ -26,7 +26,7 @@ A comprehensive movie recommendation and review platform backend built with Node
 - **Runtime**: Node.js with ES6 modules
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
-- **AI Integration**: Google Generative AI (Gemini Pro)
+- **AI Integration**: Google Generative AI (Gemini 1.5 Flash)
 - **Authentication**: JWT (JSON Web Tokens) with bcrypt for password hashing
 - **Validation**: Express Validator
 - **Development Tools**: JSDoc for documentation
@@ -70,6 +70,7 @@ filmsage-backend/
 - Node.js (v16 or higher)
 - MongoDB Atlas account or local MongoDB installation
 - Google AI Studio API key for Gemini AI
+- TMDB API key for automatic movie ID search
 - npm or yarn package manager
 
 ### Installation
@@ -101,6 +102,9 @@ filmsage-backend/
    
    # Google AI Configuration
    GEMINI_API_KEY=your_gemini_api_key
+   
+   # TMDB Configuration (for automatic movie ID search)
+   TMDB_API_KEY=your_tmdb_api_key
    
    # Frontend URLs (for CORS)
    FRONTEND_URL_DEV=http://localhost:3000
@@ -219,6 +223,7 @@ npm test
 - `express` - Web framework
 - `mongoose` - MongoDB ODM
 - `@google/generative-ai` - Google AI integration
+- `axios` - HTTP client for TMDB API integration
 - `jsonwebtoken` - JWT implementation
 - `bcrypt` & `bcryptjs` - Password hashing libraries
 - `cors` - Cross-origin resource sharing

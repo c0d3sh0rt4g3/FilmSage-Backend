@@ -1,7 +1,8 @@
 import genAI from '../config/gemini.js';
+import { enrichRecommendationsWithTmdbIds } from './tmdbService.js';
 
 async function getMovieRecommendations(userReviews) {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // RAG: Retrieval-Augmented Generation
     // 1. Validation: Verificar que se recibieron reviews
@@ -19,41 +20,52 @@ async function getMovieRecommendations(userReviews) {
 
     // 3. Build a detailed prompt
     const prompt = `
-        Actúa como un experto en cine y un sistema de recomendación de películas llamado FilmSage.
-        Analiza las siguientes reviews escritas por un usuario para entender sus gustos y preferencias cinematográficas:
+        Act as a movie expert and a movie recommendation system called FilmSage.
+        Analyze the following user reviews to understand their movie tastes and cinematographic preferences:
 
-        ESTADÍSTICAS DEL USUARIO:
-        - Puntuación promedio: ${averageRating.toFixed(1)}/5
-        - Reviews con puntuación alta (4-5): ${highRatedReviews.length}
-        - Reviews con puntuación baja (1-2): ${lowRatedReviews.length}
+        USER STATISTICS:
+        - Average rating: ${averageRating.toFixed(1)}/5
+        - High-rated reviews (4-5): ${highRatedReviews.length}
+        - Low-rated reviews (1-2): ${lowRatedReviews.length}
 
-        REVIEWS DEL USUARIO:
+        USER REVIEWS:
         ${reviewsData.map((review, index) => `
-        ${index + 1}. "${review.title}" (${review.contentType}) - Puntuación: ${review.rating}/5
+        ${index + 1}. "${review.title}" (${review.contentType}) - Rating: ${review.rating}/5
            Review: "${review.content}"
         `).join('\n')}
 
-        INSTRUCCIONES:
-        1. Analiza el tono y contenido de cada review para identificar qué elementos le gustan o disgustan al usuario
-        2. Considera tanto la puntuación numérica como el contenido escrito de la review
-        3. Identifica patrones en géneros, directores, actores, temáticas, estilos narrativos, etc.
-        4. Recomienda 5 películas que coincidan con los gustos identificados
-        5. NO recomiendes ninguna película que ya haya reseñado
+        INSTRUCTIONS:
+        1. Analyze the tone and content of each review to identify what elements the user likes or dislikes
+        2. Consider both the numerical rating and the written content of the review
+        3. Identify patterns in genres, directors, actors, themes, narrative styles, etc.
+        4. Recommend 6 movies that match the identified preferences
+        5. DO NOT recommend any movie that the user has already reviewed
+        6. Don't worry about including TMDB IDs - the system will find them automatically
 
-        Tu respuesta DEBE ser únicamente un objeto JSON válido, sin ningún texto o formato adicional antes o después.
-        El objeto JSON debe tener una única clave "recommendations" que sea un array de objetos.
-        Cada objeto en el array debe tener las siguientes claves: "title", "year", y "justification" (explicación detallada basada en el análisis de sus reviews).
+        REQUIRED RESPONSE FORMAT:
+        Your response MUST be only a valid JSON object. DO NOT include explanatory text, markdown, or additional code formatting.
+        The JSON object must have a single key "recommendations" that is an array of objects.
+        Each object in the array must have exactly these keys: "title", "year", and "justification".
+        You can optionally include "tmdb_id" if you're absolutely certain of the ID, otherwise omit it entirely.
 
-        Ejemplo de la estructura de respuesta:
+        EXACT EXPECTED FORMAT EXAMPLE:
         {
           "recommendations": [
             {
               "title": "Blade Runner 2049",
               "year": 2017,
-              "justification": "Basándome en tu review positiva de films de ciencia ficción con narrativa compleja y tu apreciación por la cinematografía atmosférica, esta secuela combina elementos visuales impresionantes con profundidad filosófica."
+              "justification": "Based on your positive review of sci-fi films with complex narratives and your appreciation for atmospheric cinematography, this sequel combines impressive visual elements with philosophical depth."
+            },
+            {
+              "title": "The Shawshank Redemption",
+              "year": 1994,
+              "justification": "Considering your positive evaluation of emotional narratives with deep character development, this prison drama offers a moving story about hope and friendship."
             }
           ]
         }
+
+        IMPORTANT: Respond ONLY with the JSON, without additional text or code formatting.
+        ALL JUSTIFICATIONS MUST BE IN ENGLISH.
     `;
 
     // 4. Generation: Call the model
@@ -62,12 +74,67 @@ async function getMovieRecommendations(userReviews) {
         const response = await result.response;
         const text = response.text();
         
-        // Validar que la respuesta sea JSON válido
-        if (!text.trim().startsWith('{')) {
+        console.log("Raw Gemini response:", text); // Debug log
+        
+        // Extract JSON from the response (handle markdown code blocks)
+        let jsonString = text.trim();
+        
+        // If response is wrapped in markdown code blocks, extract the JSON
+        if (jsonString.includes('```json')) {
+            const jsonMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+            if (jsonMatch) {
+                jsonString = jsonMatch[1].trim();
+            }
+        } else if (jsonString.includes('```')) {
+            // Handle generic code blocks
+            const codeMatch = jsonString.match(/```\s*([\s\S]*?)\s*```/);
+            if (codeMatch) {
+                jsonString = codeMatch[1].trim();
+            }
+        }
+        
+        // Remove any leading/trailing non-JSON text
+        const jsonStart = jsonString.indexOf('{');
+        const jsonEnd = jsonString.lastIndexOf('}');
+        
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+            jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+        }
+        
+        // Validate that we have JSON-like content
+        if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
+            console.error("Processed response doesn't look like JSON:", jsonString);
             throw new Error('Respuesta inválida de Gemini - no es JSON válido');
         }
         
-        return JSON.parse(text);
+        const parsedResponse = JSON.parse(jsonString);
+        
+        // Validate the structure
+        if (!parsedResponse.recommendations || !Array.isArray(parsedResponse.recommendations)) {
+            throw new Error('Invalid response structure - missing recommendations array');
+        }
+
+        // Validate each recommendation has required fields
+        for (const rec of parsedResponse.recommendations) {
+            if (!rec.title || !rec.year || !rec.justification) {
+                throw new Error('Invalid recommendation structure - missing required fields (title, year, justification)');
+            }
+            // tmdb_id is optional, but if present should be a number or null
+            if (rec.tmdb_id !== null && rec.tmdb_id !== undefined && typeof rec.tmdb_id !== 'number') {
+                console.warn('Warning: tmdb_id should be a number or null, got:', typeof rec.tmdb_id);
+                // Set to null if invalid
+                rec.tmdb_id = null;
+            }
+        }
+        
+        // Enrich recommendations with TMDB IDs if missing
+        console.log('Enriching recommendations with TMDB IDs...');
+        const enrichedRecommendations = await enrichRecommendationsWithTmdbIds(parsedResponse.recommendations);
+        
+        return {
+            ...parsedResponse,
+            recommendations: enrichedRecommendations
+        };
 
     } catch (error) {
         console.error("Error getting recommendations from Gemini:", error);
