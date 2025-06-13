@@ -139,7 +139,300 @@ async function enrichRecommendationsWithTmdbIds(recommendations) {
     return enrichedRecommendations;
 }
 
+/**
+ * Search for movies in TMDB
+ * @param {string} query - Search query
+ * @returns {Promise<Object>} Search results
+ */
+async function searchMovies(query) {
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                query: encodeURIComponent(query),
+                language: 'en-US'
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error searching movies:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get movie details by ID
+ * @param {number} movieId - TMDB movie ID
+ * @returns {Promise<Object>} Movie details
+ */
+async function getMovieDetails(movieId) {
+    if (!movieId || typeof movieId !== 'number') {
+        throw new Error('Valid movie ID is required');
+    }
+
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/movie/${movieId}`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US'
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('Movie not found');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting movie details:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Search for TV shows in TMDB
+ * @param {string} query - Search query
+ * @returns {Promise<Object>} Search results
+ */
+async function searchTVShows(query) {
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/search/tv`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                query: encodeURIComponent(query),
+                language: 'en-US'
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error searching TV shows:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get TV show details by ID
+ * @param {number} tvId - TMDB TV show ID
+ * @returns {Promise<Object>} TV show details
+ */
+async function getTVShowDetails(tvId) {
+    if (!tvId || typeof tvId !== 'number') {
+        throw new Error('Valid TV show ID is required');
+    }
+
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/tv/${tvId}`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US'
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('TV show not found');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting TV show details:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get popular movies
+ * @param {number} page - Page number (default: 1)
+ * @returns {Promise<Object>} Popular movies
+ */
+async function getPopularMovies(page = 1) {
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/movie/popular`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US',
+                page: page
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting popular movies:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get top rated movies
+ * @param {number} page - Page number (default: 1)
+ * @returns {Promise<Object>} Top rated movies
+ */
+async function getTopRatedMovies(page = 1) {
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/movie/top_rated`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US',
+                page: page
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting top rated movies:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get movies by genre
+ * @param {number|Array} genreIds - Genre ID(s)
+ * @param {number} page - Page number (default: 1)
+ * @returns {Promise<Object>} Movies by genre
+ */
+async function getMoviesByGenre(genreIds, page = 1) {
+    if (!genreIds) {
+        throw new Error('Genre ID(s) required');
+    }
+
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    const genres = Array.isArray(genreIds) ? genreIds.join(',') : genreIds;
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US',
+                with_genres: genres,
+                page: page
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting movies by genre:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get movie genres
+ * @returns {Promise<Object>} Movie genres
+ */
+async function getGenres() {
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/genre/movie/list`, {
+            params: {
+                api_key: TMDB_API_KEY,
+                language: 'en-US'
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('No data received from TMDB');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting genres:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get movie credits (cast and crew)
+ * @param {number} movieId - TMDB movie ID
+ * @returns {Promise<Object>} Movie credits
+ */
+async function getMovieCredits(movieId) {
+    if (!movieId || typeof movieId !== 'number') {
+        throw new Error('Valid movie ID is required');
+    }
+
+    if (!TMDB_API_KEY) {
+        throw new Error('TMDB API key is required');
+    }
+
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/movie/${movieId}/credits`, {
+            params: {
+                api_key: TMDB_API_KEY
+            }
+        });
+
+        if (!response.data) {
+            throw new Error('Movie credits not found');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('Error getting movie credits:', error.message);
+        throw error;
+    }
+}
+
 export {
     searchMovieId,
-    enrichRecommendationsWithTmdbIds
+    enrichRecommendationsWithTmdbIds,
+    searchMovies,
+    getMovieDetails,
+    searchTVShows,
+    getTVShowDetails,
+    getPopularMovies,
+    getTopRatedMovies,
+    getMoviesByGenre,
+    getGenres,
+    getMovieCredits
 }; 

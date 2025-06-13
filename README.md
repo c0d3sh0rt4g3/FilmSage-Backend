@@ -58,6 +58,10 @@ filmsage-backend/
 │   ├── services/         # Business logic services
 │   │   └── recommendationService.js
 │   └── server.js         # Application entry point
+├── tests/                # Test suite
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   └── helpers/          # Test utilities
 ├── package.json
 ├── package-lock.json
 └── README.md
@@ -222,10 +226,57 @@ The recommendation system uses RAG (Retrieval-Augmented Generation):
 
 ## 🧪 Testing
 
-```bash
-# Run tests (when implemented)
-npm test
+FilmSage Backend includes a comprehensive test suite to ensure application robustness and reliability.
+
+### Test Coverage
+
+The test suite covers:
+- **Unit Tests**: Models, controllers, middleware, and services
+- **Integration Tests**: Complete API endpoints with authentication
+- **Database Tests**: MongoDB operations with in-memory database
+- **External Services**: Mocked TMDB API and Gemini AI integrations
+
+### Test Structure
+
 ```
+tests/
+├── unit/                       # Unit tests
+│   ├── models/                 # Database model validation
+│   ├── controllers/            # Business logic testing
+│   ├── middleware/             # Authentication & authorization
+│   └── services/               # External service integrations
+├── integration/                # Integration tests
+│   └── routes/                 # Complete API endpoint testing
+└── helpers/                    # Test utilities and setup
+```
+
+### Running Tests
+
+```bash
+# Install test dependencies
+npm install --save-dev jest supertest mongodb-memory-server @jest/globals
+
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests in watch mode (for development)
+npm run test:watch
+
+# Run specific test types
+npm test -- tests/unit          # Unit tests only
+npm test -- tests/integration   # Integration tests only
+```
+
+### Testing Features
+
+- **Isolated Environment**: Each test runs with a clean MongoDB Memory Server instance
+- **Mocked External Services**: TMDB API and Gemini AI are mocked for reliable testing
+- **Authentication Testing**: Complete JWT token and role-based authorization testing
+- **Error Handling**: Comprehensive error scenario testing
+- **Data Validation**: Input validation and constraint testing
 
 ## 📦 Dependencies
 
@@ -244,6 +295,10 @@ npm test
 ### Development Dependencies
 - `jsdoc` - Documentation generation
 - `docdash` - JSDoc theme
+- `jest` - Testing framework
+- `supertest` - HTTP testing library
+- `mongodb-memory-server` - In-memory MongoDB for testing
+- `@jest/globals` - Jest global functions for ES modules
 
 ## 🚀 Deployment
 
