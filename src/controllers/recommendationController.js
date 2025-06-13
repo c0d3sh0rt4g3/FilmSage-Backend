@@ -2,8 +2,8 @@ import * as recommendationService from '../services/recommendationService.js';
 
 const getRecommendations = async (req, res) => {
     try {
-        // Obtener las reviews desde el body de la request
-        const { reviews, userId } = req.body;
+        // Obtener las reviews y géneros favoritos desde el body de la request
+        const { reviews, userId, favoriteGenres = [] } = req.body;
         
         if (!reviews || !Array.isArray(reviews)) {
             return res.status(400).json({ 
@@ -19,12 +19,13 @@ const getRecommendations = async (req, res) => {
             });
         }
 
-        console.log(`Generando recomendaciones basadas en ${reviews.length} reviews`);
-        const recommendations = await recommendationService.getMovieRecommendations(reviews);
+        console.log(`Generando recomendaciones basadas en ${reviews.length} reviews y ${favoriteGenres.length} géneros favoritos`);
+        const recommendations = await recommendationService.getMovieRecommendations(reviews, favoriteGenres);
         
         res.status(200).json({
             message: 'Recomendaciones generadas exitosamente',
             reviewsAnalyzed: reviews.length,
+            favoriteGenresCount: favoriteGenres.length,
             userId: userId || 'no especificado',
             ...recommendations
         });

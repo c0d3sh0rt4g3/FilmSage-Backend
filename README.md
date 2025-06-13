@@ -181,25 +181,35 @@ The server will start on `http://localhost:3000` (or your specified PORT).
       "content": "Amazing sci-fi movie with groundbreaking visual effects..."
     }
   ],
-  "userId": "user_id_here"
+  "userId": "user_id_here",
+  "favoriteGenres": [28, 878, 53]
 }
 ```
 
+**Available Genre IDs:**
+- 28: Action, 12: Adventure, 16: Animation, 35: Comedy
+- 80: Crime, 99: Documentary, 18: Drama, 10751: Family
+- 14: Fantasy, 36: History, 27: Horror, 10402: Music
+- 9648: Mystery, 10749: Romance, 878: Science Fiction
+- 53: Thriller, 10752: War, 37: Western
+
 ## 🤖 AI Recommendation System
 
-FilmSage uses Google's Gemini AI to provide personalized movie recommendations based on user reviews. The system:
+FilmSage uses Google's Gemini AI to provide personalized movie recommendations based on user reviews and favorite genres. The system:
 
 1. **Analyzes User Reviews**: Processes the content and ratings of user reviews
-2. **Identifies Patterns**: Finds preferences in genres, themes, directors, and styles
-3. **Generates Recommendations**: Provides 5 personalized movie suggestions
-4. **Explains Reasoning**: Each recommendation includes detailed justification
+2. **Considers Favorite Genres**: Takes into account the user's preferred movie genres
+3. **Identifies Patterns**: Finds preferences in genres, themes, directors, and styles
+4. **Generates Recommendations**: Provides 6 personalized movie suggestions with TMDB IDs
+5. **Explains Reasoning**: Each recommendation includes detailed justification
 
 ### How It Works
 
 The recommendation system uses RAG (Retrieval-Augmented Generation):
-- **Retrieval**: Gathers user review data and preferences
-- **Augmentation**: Enhances prompts with user statistics and patterns
-- **Generation**: Uses Gemini AI to generate contextual recommendations
+- **Retrieval**: Gathers user review data, ratings, and favorite genre preferences
+- **Augmentation**: Enhances prompts with user statistics, patterns, and genre preferences
+- **Generation**: Uses Gemini AI to generate contextual recommendations prioritizing favorite genres
+- **Enrichment**: Automatically finds TMDB IDs for all recommended movies
 
 ## 🔐 Security Features
 

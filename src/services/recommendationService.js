@@ -1,7 +1,29 @@
 import genAI from '../config/gemini.js';
 import { enrichRecommendationsWithTmdbIds } from './tmdbService.js';
 
-async function getMovieRecommendations(userReviews) {
+// Genre mapping from TMDB IDs to names
+const GENRE_MAP = {
+    28: 'Action',
+    12: 'Adventure', 
+    16: 'Animation',
+    35: 'Comedy',
+    80: 'Crime',
+    99: 'Documentary',
+    18: 'Drama',
+    10751: 'Family',
+    14: 'Fantasy',
+    36: 'History',
+    27: 'Horror',
+    10402: 'Music',
+    9648: 'Mystery',
+    10749: 'Romance',
+    878: 'Science Fiction',
+    53: 'Thriller',
+    10752: 'War',
+    37: 'Western'
+};
+
+async function getMovieRecommendations(userReviews, favoriteGenres = []) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // RAG: Retrieval-Augmented Generation
@@ -12,6 +34,9 @@ async function getMovieRecommendations(userReviews) {
 
     // 2. Augmentation: Las reviews ya vienen preparadas desde el frontend
     const reviewsData = userReviews;
+    
+    // Convert favorite genre IDs to names
+    const favoriteGenreNames = favoriteGenres.map(id => GENRE_MAP[id]).filter(Boolean);
 
     // Calcular estadísticas
     const averageRating = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
@@ -19,6 +44,10 @@ async function getMovieRecommendations(userReviews) {
     const lowRatedReviews = reviewsData.filter(review => review.rating <= 2);
 
     // 3. Build a detailed prompt
+    const favoriteGenresText = favoriteGenreNames.length > 0 
+        ? `User's favorite genres: ${favoriteGenreNames.join(', ')}`
+        : 'No specific favorite genres provided';
+    
     const prompt = `
         Act as a movie expert and a movie recommendation system called FilmSage.
         Analyze the following user reviews to understand their movie tastes and cinematographic preferences:
@@ -27,6 +56,9 @@ async function getMovieRecommendations(userReviews) {
         - Average rating: ${averageRating.toFixed(1)}/5
         - High-rated reviews (4-5): ${highRatedReviews.length}
         - Low-rated reviews (1-2): ${lowRatedReviews.length}
+
+        USER PREFERENCES:
+        - ${favoriteGenresText}
 
         USER REVIEWS:
         ${reviewsData.map((review, index) => `
@@ -37,10 +69,11 @@ async function getMovieRecommendations(userReviews) {
         INSTRUCTIONS:
         1. Analyze the tone and content of each review to identify what elements the user likes or dislikes
         2. Consider both the numerical rating and the written content of the review
-        3. Identify patterns in genres, directors, actors, themes, narrative styles, etc.
-        4. Recommend 6 movies that match the identified preferences
-        5. DO NOT recommend any movie that the user has already reviewed
-        6. Don't worry about including TMDB IDs - the system will find them automatically
+        3. Pay special attention to the user's favorite genres and give preference to movies in those genres
+        4. Identify patterns in genres, directors, actors, themes, narrative styles, etc.
+        5. Recommend 6 movies that match the identified preferences, prioritizing the user's favorite genres when possible
+        6. DO NOT recommend any movie that the user has already reviewed
+        7. Don't worry about including TMDB IDs - the system will find them automatically
 
         REQUIRED RESPONSE FORMAT:
         Your response MUST be only a valid JSON object. DO NOT include explanatory text, markdown, or additional code formatting.
