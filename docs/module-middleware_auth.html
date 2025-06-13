@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>middleware/auth - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">middleware/auth</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+                <div class="description usertext"><p>auth.middleware.js</p></div>
+            
+
+            
+                
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>auth.middleware.js</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="middleware_auth.middleware.js.html">middleware/auth.middleware.js</a>, <a href="middleware_auth.middleware.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~authenticateToken"><span class="type-signature type-signature-async, inner">(async, inner) </span>authenticateToken<span class="signature">(req, res, next)</span><span class="type-signature"> &rarr; {void}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Middleware to authenticate JWT tokens and attach user information to request</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="middleware_auth.middleware.js.html">middleware/auth.middleware.js</a>, <a href="middleware_auth.middleware.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>// Usage in routesapp.get('/protected', authenticateToken, (req, res) => {  console.log(req.user.id); // Authenticated user ID});</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express request object</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Request headers</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>authorization</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Authorization header containing Bearer token</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express next function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-throws">Throws:</h5>
+<ul>
+        <li>
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        <p>401 status when token is missing</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Object</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+</li>
+    
+        <li>
+
+<dl>
+    <dt>
+        <div class="param-desc usertext">
+        <p>403 status when token is invalid or user not found/inactive</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Object</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+</li>
+    </ul>
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~authorizeRole"><span class="type-signature type-signature-inner">(inner) </span>authorizeRole<span class="signature">(roles)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Middleware factory for role-based authorization</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="middleware_auth.middleware.js.html">middleware/auth.middleware.js</a>, <a href="middleware_auth.middleware.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>// Single roleapp.delete('/admin/users/:id', authenticateToken, authorizeRole('admin'), deleteUser);// Multiple rolesapp.post('/reviews', authenticateToken, authorizeRole(['user', 'reviewer']), createReview);</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>roles</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Required role(s) for access</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Express middleware function</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

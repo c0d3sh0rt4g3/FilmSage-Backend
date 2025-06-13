@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>config/db.js - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">config/db.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Database configuration module
+ * Handles MongoDB connection using Mongoose
+ * @file db.js
+ * @module config/db
+ */
+
+import mongoose from "mongoose";
+
+/**
+ * Establishes connection to MongoDB database
+ * @async
+ * @function connectDB
+ * @description Connects to MongoDB using the connection string from environment variables
+ * @throws {Error} When connection fails
+ * @returns {Promise&lt;void>} Promise that resolves when connection is established
+ */
+export const connectDB = async () => {
+    try {
+        const connect = await mongoose.connect("mongodb+srv://elopjim829:q3IiZ3rbDVHI89lY@cluster0.ksfehvr.mongodb.net/?retryWrites=true&amp;w=majority&amp;appName=Cluster0")
+        console.log(`MongoDB Connected: ${connect.connection.host}`)
+    } catch (err) {
+        console.error(`Error: ${err.message}`)
+        process.exit(1)
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

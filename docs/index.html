@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Home - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+    <section class="package">
+        <h3> </h3>		
+    </section>
+
+
+
+
+
+
+
+
+
+    
+
+
+
+    <section class="readme usertext">
+        <article><h1>FilmSage Backend API</h1>
+<p>A comprehensive movie recommendation and review platform backend built with Node.js, Express, and MongoDB. FilmSage provides AI-powered movie recommendations using Google's Gemini AI, along with a complete user management and review system.</p>
+<h2>🌟 Features</h2>
+<h3>Core Functionality</h3>
+<ul>
+<li><strong>AI-Powered Recommendations</strong>: Personalized movie recommendations using Google Gemini AI</li>
+<li><strong>User Management</strong>: Complete authentication system with JWT tokens</li>
+<li><strong>Review System</strong>: Users can create, read, update, and delete movie/TV show reviews</li>
+<li><strong>Social Features</strong>: Follow users, like reviews, comment on reviews</li>
+<li><strong>Watchlist Management</strong>: Add movies to personal watchlists</li>
+<li><strong>Favorites System</strong>: Save favorite movies and TV shows</li>
+<li><strong>Rating System</strong>: Rate movies and TV shows (1-5 stars)</li>
+<li><strong>Admin Panel</strong>: Administrative controls for user and content management</li>
+</ul>
+<h3>Advanced Features</h3>
+<ul>
+<li><strong>Role-Based Access Control</strong>: User, Reviewer, and Admin roles</li>
+<li><strong>Real-time Activity Tracking</strong>: Monitor user interactions and activities</li>
+<li><strong>Content Moderation</strong>: Admin approval system for reviews</li>
+<li><strong>Cross-Origin Resource Sharing (CORS)</strong>: Configured for multiple frontend environments</li>
+<li><strong>Data Validation</strong>: Comprehensive input validation using express-validator</li>
+</ul>
+<h2>🛠️ Technology Stack</h2>
+<ul>
+<li><strong>Runtime</strong>: Node.js with ES6 modules</li>
+<li><strong>Framework</strong>: Express.js</li>
+<li><strong>Database</strong>: MongoDB with Mongoose ODM</li>
+<li><strong>AI Integration</strong>: Google Generative AI (Gemini 1.5 Flash)</li>
+<li><strong>Authentication</strong>: JWT (JSON Web Tokens) with bcrypt for password hashing</li>
+<li><strong>Validation</strong>: Express Validator</li>
+<li><strong>Development Tools</strong>: JSDoc for documentation</li>
+</ul>
+<h2>📁 Project Structure</h2>
+<pre class="prettyprint source"><code>filmsage-backend/
+├── src/
+│   ├── config/           # Configuration files
+│   │   ├── db.js         # MongoDB connection
+│   │   ├── gemini.js     # Google AI configuration
+│   │   └── jwt.config.js # JWT configuration
+│   ├── controllers/      # Route controllers
+│   │   ├── user.controller.js
+│   │   ├── review.controller.js
+│   │   ├── userInteraction.controller.js
+│   │   └── recommendationController.js
+│   ├── middleware/       # Custom middleware
+│   │   └── auth.middleware.js
+│   ├── models/           # Database models
+│   │   ├── user/         # User-related models
+│   │   └── review/       # Review-related models
+│   ├── routes/           # API routes
+│   │   ├── user.routes.js
+│   │   ├── review.routes.js
+│   │   ├── userInteraction.routes.js
+│   │   └── recommendationRoutes.js
+│   ├── services/         # Business logic services
+│   │   └── recommendationService.js
+│   └── server.js         # Application entry point
+├── package.json
+├── package-lock.json
+└── README.md
+</code></pre>
+<h2>🚀 Getting Started</h2>
+<h3>Prerequisites</h3>
+<ul>
+<li>Node.js (v16 or higher)</li>
+<li>MongoDB Atlas account or local MongoDB installation</li>
+<li>Google AI Studio API key for Gemini AI</li>
+<li>TMDB API key for automatic movie ID search</li>
+<li>npm or yarn package manager</li>
+</ul>
+<h3>Installation</h3>
+<ol>
+<li>
+<p><strong>Clone the repository</strong></p>
+<pre class="prettyprint source lang-bash"><code>git clone https://github.com/yourusername/filmsage-backend.git
+cd filmsage-backend
+</code></pre>
+</li>
+<li>
+<p><strong>Install dependencies</strong></p>
+<pre class="prettyprint source lang-bash"><code>npm install
+</code></pre>
+</li>
+<li>
+<p><strong>Environment Configuration</strong></p>
+<p>Create a <code>.env</code> file in the root directory with the following variables:</p>
+<pre class="prettyprint source lang-env"><code># Server Configuration
+PORT=3000
+
+# Database
+MONGODB_URI=your_mongodb_connection_string
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=7d
+
+# Google AI Configuration
+GEMINI_API_KEY=your_gemini_api_key
+
+# TMDB Configuration (for automatic movie ID search)
+TMDB_API_KEY=your_tmdb_api_key
+
+# Frontend URLs (for CORS)
+FRONTEND_URL_DEV=http://localhost:3000
+FRONTEND_URL_LOCAL=http://localhost:8080
+FRONTEND_URL_PROD=https://your-production-domain.com
+
+
+</code></pre>
+</li>
+<li>
+<p><strong>Start the development server</strong></p>
+<pre class="prettyprint source lang-bash"><code>npm start
+</code></pre>
+</li>
+</ol>
+<p>The server will start on <code>http://localhost:3000</code> (or your specified PORT).</p>
+<h2>📚 API Documentation</h2>
+<h3>Authentication Endpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/users/register</code></td>
+<td>Register a new user</td>
+<td>None</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/users/login</code></td>
+<td>User login</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3>User Management</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/users</code></td>
+<td>Get all users</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/users/:id</code></td>
+<td>Get user by ID</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/users/:id/stats</code></td>
+<td>Get user statistics</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/users/:id</code></td>
+<td>Update user profile</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/users/:id/password</code></td>
+<td>Change password</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/users/:id</code></td>
+<td>Delete user</td>
+<td>Admin</td>
+</tr>
+</tbody>
+</table>
+<h3>Review System</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/reviews</code></td>
+<td>Create a new review</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/reviews</code></td>
+<td>Get all reviews</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/reviews/:id</code></td>
+<td>Get review by ID</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/reviews/:id</code></td>
+<td>Update review</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/reviews/:id</code></td>
+<td>Delete review</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/reviews/:id/like</code></td>
+<td>Like a review</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/reviews/:id/like</code></td>
+<td>Remove like</td>
+<td>JWT</td>
+</tr>
+</tbody>
+</table>
+<h3>User Interactions</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/userInteractions/ratings</code></td>
+<td>Add rating</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/userInteractions/ratings/user/:userId</code></td>
+<td>Get user ratings</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/userInteractions/watchlist</code></td>
+<td>Add to watchlist</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/userInteractions/watchlist/user/:userId</code></td>
+<td>Get user watchlist</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/userInteractions/favorites</code></td>
+<td>Add to favorites</td>
+<td>JWT</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/userInteractions/follow</code></td>
+<td>Follow user</td>
+<td>JWT</td>
+</tr>
+</tbody>
+</table>
+<h3>AI Recommendations</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/recommendations</code></td>
+<td>Get AI-powered recommendations</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Request Body Example:</strong></p>
+<pre class="prettyprint source lang-json"><code>{
+  &quot;reviews&quot;: [
+    {
+      &quot;title&quot;: &quot;The Matrix&quot;,
+      &quot;contentType&quot;: &quot;movie&quot;,
+      &quot;rating&quot;: 5,
+      &quot;content&quot;: &quot;Amazing sci-fi movie with groundbreaking visual effects...&quot;
+    }
+  ],
+  &quot;userId&quot;: &quot;user_id_here&quot;,
+  &quot;favoriteGenres&quot;: [28, 878, 53]
+}
+</code></pre>
+<p><strong>Available Genre IDs:</strong></p>
+<ul>
+<li>28: Action, 12: Adventure, 16: Animation, 35: Comedy</li>
+<li>80: Crime, 99: Documentary, 18: Drama, 10751: Family</li>
+<li>14: Fantasy, 36: History, 27: Horror, 10402: Music</li>
+<li>9648: Mystery, 10749: Romance, 878: Science Fiction</li>
+<li>53: Thriller, 10752: War, 37: Western</li>
+</ul>
+<h2>🤖 AI Recommendation System</h2>
+<p>FilmSage uses Google's Gemini AI to provide personalized movie recommendations based on user reviews and favorite genres. The system:</p>
+<ol>
+<li><strong>Analyzes User Reviews</strong>: Processes the content and ratings of user reviews</li>
+<li><strong>Considers Favorite Genres</strong>: Takes into account the user's preferred movie genres</li>
+<li><strong>Identifies Patterns</strong>: Finds preferences in genres, themes, directors, and styles</li>
+<li><strong>Generates Recommendations</strong>: Provides 6 personalized movie suggestions with TMDB IDs</li>
+<li><strong>Explains Reasoning</strong>: Each recommendation includes detailed justification</li>
+</ol>
+<h3>How It Works</h3>
+<p>The recommendation system uses RAG (Retrieval-Augmented Generation):</p>
+<ul>
+<li><strong>Retrieval</strong>: Gathers user review data, ratings, and favorite genre preferences</li>
+<li><strong>Augmentation</strong>: Enhances prompts with user statistics, patterns, and genre preferences</li>
+<li><strong>Generation</strong>: Uses Gemini AI to generate contextual recommendations prioritizing favorite genres</li>
+<li><strong>Enrichment</strong>: Automatically finds TMDB IDs for all recommended movies</li>
+</ul>
+<h2>🔐 Security Features</h2>
+<ul>
+<li><strong>JWT Authentication</strong>: Secure token-based authentication</li>
+<li><strong>Password Hashing</strong>: bcrypt for secure password storage</li>
+<li><strong>Role-Based Access</strong>: Different permission levels (User, Reviewer, Admin)</li>
+<li><strong>Input Validation</strong>: Comprehensive validation using express-validator</li>
+<li><strong>CORS Configuration</strong>: Controlled cross-origin resource sharing</li>
+<li><strong>Environment Variables</strong>: Sensitive data protected via environment configuration</li>
+</ul>
+<h2>🧪 Testing</h2>
+<pre class="prettyprint source lang-bash"><code># Run tests (when implemented)
+npm test
+</code></pre>
+<h2>📦 Dependencies</h2>
+<h3>Production Dependencies</h3>
+<ul>
+<li><code>express</code> - Web framework</li>
+<li><code>mongoose</code> - MongoDB ODM</li>
+<li><code>@google/generative-ai</code> - Google AI integration</li>
+<li><code>axios</code> - HTTP client for TMDB API integration</li>
+<li><code>jsonwebtoken</code> - JWT implementation</li>
+<li><code>bcrypt</code> &amp; <code>bcryptjs</code> - Password hashing libraries</li>
+<li><code>cors</code> - Cross-origin resource sharing</li>
+<li><code>express-validator</code> - Input validation</li>
+<li><code>dotenv</code> - Environment variable management</li>
+<li><code>sequelize</code> - SQL ORM (available but not actively used)</li>
+</ul>
+<h3>Development Dependencies</h3>
+<ul>
+<li><code>jsdoc</code> - Documentation generation</li>
+<li><code>docdash</code> - JSDoc theme</li>
+</ul>
+<h2>🚀 Deployment</h2>
+<h3>Production Checklist</h3>
+<ol>
+<li><strong>Environment Variables</strong>: Ensure all production environment variables are set</li>
+<li><strong>Database</strong>: Configure production MongoDB instance</li>
+<li><strong>Security</strong>: Update CORS origins for production domains</li>
+<li><strong>Monitoring</strong>: Implement logging and monitoring solutions</li>
+<li><strong>Process Management</strong>: Use PM2 or similar for process management</li>
+</ol>
+<h3>Docker Deployment (Optional)</h3>
+<pre class="prettyprint source lang-dockerfile"><code>FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD [&quot;npm&quot;, &quot;start&quot;]
+</code></pre>
+<h2>📄 License</h2>
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+<hr>
+<p><strong>FilmSage Backend API</strong> - Bringing AI-powered movie recommendations to film enthusiasts worldwide. 🎬✨</p></article>
+    </section>
+
+
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            src/server.js
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>server.js</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>FilmSage Team</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+                <div class="description usertext"><p>server.js</p></div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

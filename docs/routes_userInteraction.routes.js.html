@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>routes/userInteraction.routes.js - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">routes/userInteraction.routes.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * User interaction routes module
+ * Defines API endpoints for user interactions like ratings, watchlist, favorites, and follows
+ * @file userInteraction.routes.js
+ * @module routes/userInteractionRoutes
+ */
+
+import { Router } from 'express';
+import userInteractionController from '../controllers/userInteraction.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
+
+const router = Router();
+
+/**
+ * Authentication middleware applied to all routes
+ * All routes require valid JWT token
+ */
+router.use(authenticateToken);
+
+/**
+ * Rating operations
+ */
+
+/**
+ * POST /userInteractions/ratings
+ * Add or update user rating for content
+ * @name AddRating
+ * @route {POST} /ratings
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.post('/ratings', userInteractionController.addRating);
+
+/**
+ * GET /userInteractions/ratings/user/:userId
+ * Get all ratings by specific user
+ * @name GetUserRatings
+ * @route {GET} /ratings/user/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/ratings/user/:userId', userInteractionController.getUserRatings);
+
+/**
+ * GET /userInteractions/ratings/user/:userId/from-reviews
+ * Get user ratings derived from their reviews
+ * @name GetUserRatingsFromReviews
+ * @route {GET} /ratings/user/:userId/from-reviews
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/ratings/user/:userId/from-reviews', userInteractionController.getUserRatingsFromReviews);
+
+/**
+ * GET /userInteractions/ratings/all
+ * Get all ratings (debug endpoint)
+ * @name GetAllRatings
+ * @route {GET} /ratings/all
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/ratings/all', userInteractionController.getAllRatings);
+
+/**
+ * DELETE /userInteractions/ratings/:userId/:tmdbId/:contentType
+ * Remove user rating for specific content
+ * @name RemoveRating
+ * @route {DELETE} /ratings/:userId/:tmdbId/:contentType
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.delete('/ratings/:userId/:tmdbId/:contentType', userInteractionController.removeRating);
+
+/**
+ * Watchlist operations
+ */
+
+/**
+ * POST /userInteractions/watchlist
+ * Add content to user's watchlist
+ * @name AddToWatchlist
+ * @route {POST} /watchlist
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.post('/watchlist', userInteractionController.addToWatchlist);
+
+/**
+ * GET /userInteractions/watchlist/user/:userId
+ * Get user's watchlist
+ * @name GetUserWatchlist
+ * @route {GET} /watchlist/user/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/watchlist/user/:userId', userInteractionController.getUserWatchlist);
+
+/**
+ * PUT /userInteractions/watchlist/:id
+ * Update watchlist item status
+ * @name UpdateWatchlistStatus
+ * @route {PUT} /watchlist/:id
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.put('/watchlist/:id', userInteractionController.updateWatchlistStatus);
+
+/**
+ * DELETE /userInteractions/watchlist/:id
+ * Remove content from watchlist
+ * @name RemoveFromWatchlist
+ * @route {DELETE} /watchlist/:id
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.delete('/watchlist/:id', userInteractionController.removeFromWatchlist);
+
+/**
+ * Favorites operations
+ */
+
+/**
+ * POST /userInteractions/favorites
+ * Add content to user's favorites
+ * @name AddToFavorites
+ * @route {POST} /favorites
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.post('/favorites', userInteractionController.addToFavorites);
+
+/**
+ * GET /userInteractions/favorites/user/:userId
+ * Get user's favorite content
+ * @name GetUserFavorites
+ * @route {GET} /favorites/user/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/favorites/user/:userId', userInteractionController.getUserFavorites);
+
+/**
+ * DELETE /userInteractions/favorites/:userId/:tmdbId/:contentType
+ * Remove content from favorites
+ * @name RemoveFromFavorites
+ * @route {DELETE} /favorites/:userId/:tmdbId/:contentType
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.delete('/favorites/:userId/:tmdbId/:contentType', userInteractionController.removeFromFavorites);
+
+/**
+ * Follow/Unfollow operations
+ */
+
+/**
+ * POST /userInteractions/follow
+ * Follow another user
+ * @name FollowUser
+ * @route {POST} /follow
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.post('/follow', userInteractionController.followUser);
+
+/**
+ * DELETE /userInteractions/follow/:followerId/:followedId
+ * Unfollow a user
+ * @name UnfollowUser
+ * @route {DELETE} /follow/:followerId/:followedId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.delete('/follow/:followerId/:followedId', userInteractionController.unfollowUser);
+
+/**
+ * GET /userInteractions/followers/:userId
+ * Get user's followers
+ * @name GetUserFollowers
+ * @route {GET} /followers/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/followers/:userId', userInteractionController.getUserFollowers);
+
+/**
+ * GET /userInteractions/following/:userId
+ * Get users that the user is following
+ * @name GetUserFollowing
+ * @route {GET} /following/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/following/:userId', userInteractionController.getUserFollowing);
+
+/**
+ * Activity operations
+ */
+
+/**
+ * GET /userInteractions/activity/:userId
+ * Get user's activity history
+ * @name GetUserActivity
+ * @route {GET} /activity/:userId
+ * @group UserInteractions - User interaction operations
+ * @security JWT
+ */
+router.get('/activity/:userId', userInteractionController.getUserActivity);
+
+export default router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

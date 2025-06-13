@@ -18,10 +18,14 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "jsdoc -c jsdoc.conf.json",
+    "docs:watch": "jsdoc -c jsdoc.conf.json --watch",
+    "docs:serve": "jsdoc -c jsdoc.conf.json && npx http-server docs -p 8080 -o"
   },
   "devDependencies": {
     "docdash": "^2.0.2",
+    "http-server": "^14.1.1",
     "jsdoc": "^4.0.4"
   },
   "description": "",

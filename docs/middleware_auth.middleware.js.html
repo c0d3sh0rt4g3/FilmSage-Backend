@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>middleware/auth.middleware.js - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">middleware/auth.middleware.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Authentication middleware module
+ * Provides token verification and role-based authorization
+ * @file auth.middleware.js
+ * @module middleware/auth
+ */
+
+import { verifyToken } from '../config/jwt.config.js';
+import User from '../models/user/user.model.js';
+
+/**
+ * Middleware to authenticate JWT tokens and attach user information to request
+ * @async
+ * @function authenticateToken
+ * @param {Object} req - Express request object
+ * @param {Object} req.headers - Request headers
+ * @param {string} req.headers.authorization - Authorization header containing Bearer token
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
+ * @throws {Object} 401 status when token is missing
+ * @throws {Object} 403 status when token is invalid or user not found/inactive
+ * @example
+ * // Usage in routes
+ * app.get('/protected', authenticateToken, (req, res) => {
+ *   console.log(req.user.id); // Authenticated user ID
+ * });
+ */
+export const authenticateToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader &amp;&amp; authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication token is required' });
+    }
+
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.id);
+
+    if (!user || !user.is_active) {
+      return res.status(403).json({ message: 'User not found or inactive' });
+    }
+
+    req.user = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    };
+
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+};
+
+/**
+ * Middleware factory for role-based authorization
+ * @function authorizeRole
+ * @param {string|string[]} roles - Required role(s) for access
+ * @returns {Function} Express middleware function
+ * @example
+ * // Single role
+ * app.delete('/admin/users/:id', authenticateToken, authorizeRole('admin'), deleteUser);
+ * 
+ * // Multiple roles
+ * app.post('/reviews', authenticateToken, authorizeRole(['user', 'reviewer']), createReview);
+ */
+export const authorizeRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(403).json({ message: 'Not authenticated' });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: 'Not authorized to access this resource' 
+      });
+    }
+
+    next();
+  };
+}; </code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

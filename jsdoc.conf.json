@@ -1,0 +1,58 @@
+{
+  "source": {
+    "include": ["./src/", "./README.md"],
+    "includePattern": "\\.(js|jsx)$",
+    "exclude": ["node_modules/"]
+  },
+  "opts": {
+    "destination": "./docs/",
+    "recurse": true,
+    "readme": "./README.md",
+    "template": "./node_modules/docdash"
+  },
+  "plugins": ["plugins/markdown"],
+  "docdash": {
+    "static": true,
+    "sort": true,
+    "sectionOrder": [
+      "Classes",
+      "Modules",
+      "Externals",
+      "Events",
+      "Namespaces",
+      "Mixins",
+      "Tutorials",
+      "Interfaces"
+    ],
+    "disqus": "",
+    "openGraph": {
+      "title": "FilmSage Backend API Documentation",
+      "type": "website",
+      "image": "",
+      "site_name": "FilmSage API Docs",
+      "url": ""
+    },
+    "meta": {
+      "title": "FilmSage Backend API Documentation",
+      "description": "Complete API documentation for the FilmSage movie recommendation backend application",
+      "keyword": "FilmSage, API, Backend, Documentation, Movie, Recommendation"
+    },
+    "search": true,
+    "collapse": true,
+    "typedefs": true,
+    "removeQuotes": "none",
+    "scripts": [],
+    "menu": {
+      "GitHub": {
+        "href": "https://github.com/your-username/filmsage-backend",
+        "target": "_blank",
+        "class": "menu-item",
+        "id": "github_link"
+      }
+    }
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  }
+} 

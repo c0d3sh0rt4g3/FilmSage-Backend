@@ -1,7 +1,17 @@
+/**
+ * Movie recommendation service module
+ * Provides AI-powered movie recommendations using Google Gemini
+ * @file recommendationService.js
+ * @module services/recommendationService
+ */
+
 import genAI from '../config/gemini.js';
 import { enrichRecommendationsWithTmdbIds } from './tmdbService.js';
 
-// Genre mapping from TMDB IDs to names
+/**
+ * Genre mapping from TMDB IDs to names
+ * @constant {Object<number, string>}
+ */
 const GENRE_MAP = {
     28: 'Action',
     12: 'Adventure', 
@@ -23,27 +33,38 @@ const GENRE_MAP = {
     37: 'Western'
 };
 
+/**
+ * Generates personalized movie recommendations using AI analysis of user reviews
+ * @async
+ * @function getMovieRecommendations
+ * @param {Array} userReviews - Array of user review objects containing title, rating, content, etc.
+ * @param {Array} [favoriteGenres=[]] - Array of favorite genre IDs from TMDB
+ * @returns {Promise<Object>} Object containing recommendations array and metadata
+ * @throws {Error} When no reviews are provided or AI generation fails
+ * @example
+ * const recommendations = await getMovieRecommendations([
+ *   { title: "Inception", rating: 5, content: "Amazing film!" },
+ *   { title: "The Matrix", rating: 4, content: "Great action movie" }
+ * ], [28, 878]); // Action and Sci-Fi genres
+ */
 async function getMovieRecommendations(userReviews, favoriteGenres = []) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // RAG: Retrieval-Augmented Generation
-    // 1. Validation: Verificar que se recibieron reviews
     if (!userReviews || userReviews.length === 0) {
-        throw new Error("No se proporcionaron reviews del usuario para generar recomendaciones.");
+        throw new Error("No user reviews provided for generating recommendations.");
     }
 
-    // 2. Augmentation: Las reviews ya vienen preparadas desde el frontend
     const reviewsData = userReviews;
     
     // Convert favorite genre IDs to names
     const favoriteGenreNames = favoriteGenres.map(id => GENRE_MAP[id]).filter(Boolean);
 
-    // Calcular estadísticas
+    // Calculate user statistics
     const averageRating = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
     const highRatedReviews = reviewsData.filter(review => review.rating >= 4);
     const lowRatedReviews = reviewsData.filter(review => review.rating <= 2);
 
-    // 3. Build a detailed prompt
+    // Build detailed prompt for AI analysis
     const favoriteGenresText = favoriteGenreNames.length > 0 
         ? `User's favorite genres: ${favoriteGenreNames.join(', ')}`
         : 'No specific favorite genres provided';
@@ -101,13 +122,12 @@ async function getMovieRecommendations(userReviews, favoriteGenres = []) {
         ALL JUSTIFICATIONS MUST BE IN ENGLISH.
     `;
 
-    // 4. Generation: Call the model
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
         
-        console.log("Raw Gemini response:", text); // Debug log
+        console.log("Raw Gemini response:", text);
         
         // Extract JSON from the response (handle markdown code blocks)
         let jsonString = text.trim();
@@ -137,7 +157,7 @@ async function getMovieRecommendations(userReviews, favoriteGenres = []) {
         // Validate that we have JSON-like content
         if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
             console.error("Processed response doesn't look like JSON:", jsonString);
-            throw new Error('Respuesta inválida de Gemini - no es JSON válido');
+            throw new Error('Invalid response from Gemini - not valid JSON');
         }
         
         const parsedResponse = JSON.parse(jsonString);

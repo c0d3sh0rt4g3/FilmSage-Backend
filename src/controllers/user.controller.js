@@ -30,7 +30,7 @@ const userController = {
 
       const { username, email, password, role = 'user' } = req.body;
 
-      // Check if user already exists - SINTAXIS MONGOOSE
+      // Check if user already exists
       const existingUser = await User.findOne({
         $or: [{ email }, { username }]
       });
@@ -50,7 +50,7 @@ const userController = {
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password, salt);
 
-      // Create user - SINTAXIS MONGOOSE
+      // Create user
       const newUser = new User({
         username,
         email,
@@ -93,7 +93,7 @@ const userController = {
     try {
       const { email, password } = req.body;
 
-      // Find user - SINTAXIS MONGOOSE
+      // Find user
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -139,7 +139,6 @@ const userController = {
    */
   getAllUsers: async (req, res) => {
     try {
-      // SINTAXIS MONGOOSE - excluir password_hash
       const users = await User.find({}, '-password_hash');
 
       res.status(200).json({ users });
@@ -162,7 +161,6 @@ const userController = {
     try {
       const { id } = req.params;
 
-      // SINTAXIS MONGOOSE
       const user = await User.findById(id, '-password_hash');
 
       if (!user) {
@@ -260,7 +258,6 @@ const userController = {
         }
       }
 
-      // Update user - SINTAXIS MONGOOSE
       const updatedUser = await User.findByIdAndUpdate(
         id,
         updateData,

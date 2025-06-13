@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>services/tmdbService.js - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">services/tmdbService.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import axios from 'axios';
+import 'dotenv/config';
+
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+
+/**
+ * Search for a movie in TMDB and return the most likely match
+ * @param {string} title - Movie title
+ * @param {number} year - Movie year
+ * @returns {Promise&lt;number|null>} TMDB ID or null if not found
+ */
+async function searchMovieId(title, year) {
+    if (!TMDB_API_KEY) {
+        console.warn('TMDB_API_KEY not provided, skipping TMDB search');
+        return null;
+    }
+
+    try {
+        // Search for the movie
+        const searchUrl = `${TMDB_BASE_URL}/search/movie`;
+        const response = await axios.get(searchUrl, {
+            params: {
+                api_key: TMDB_API_KEY,
+                query: title,
+                year: year,
+                language: 'en-US'
+            }
+        });
+
+        const results = response.data.results;
+        
+        if (!results || results.length === 0) {
+            console.log(`No TMDB results found for: ${title} (${year})`);
+            return null;
+        }
+
+        // Find the best match
+        const bestMatch = findBestMatch(results, title, year);
+        
+        if (bestMatch) {
+            console.log(`Found TMDB ID ${bestMatch.id} for: ${title} (${year})`);
+            return bestMatch.id;
+        }
+
+        return null;
+
+    } catch (error) {
+        console.error(`Error searching TMDB for ${title} (${year}):`, error.message);
+        return null;
+    }
+}
+
+/**
+ * Find the best match from TMDB search results
+ * @param {Array} results - TMDB search results
+ * @param {string} originalTitle - Original movie title
+ * @param {number} originalYear - Original movie year
+ * @returns {Object|null} Best matching result or null
+ */
+function findBestMatch(results, originalTitle, originalYear) {
+    // Normalize titles for comparison
+    const normalizeTitle = (title) => title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+    const normalizedOriginal = normalizeTitle(originalTitle);
+    
+    // Sort results by relevance
+    const scored = results.map(movie => {
+        const movieYear = movie.release_date ? parseInt(movie.release_date.split('-')[0]) : null;
+        const normalizedMovieTitle = normalizeTitle(movie.title);
+        
+        let score = 0;
+        
+        // Exact title match gets highest score
+        if (normalizedMovieTitle === normalizedOriginal) {
+            score += 100;
+        } else if (normalizedMovieTitle.includes(normalizedOriginal) || normalizedOriginal.includes(normalizedMovieTitle)) {
+            score += 50;
+        }
+        
+        // Year match bonus
+        if (movieYear === originalYear) {
+            score += 30;
+        } else if (movieYear &amp;&amp; Math.abs(movieYear - originalYear) &lt;= 1) {
+            score += 20; // Allow 1 year difference
+        }
+        
+        // Popularity bonus (but not too much weight)
+        score += Math.min(movie.popularity / 10, 10);
+        
+        return { ...movie, score };
+    });
+    
+    // Sort by score descending
+    scored.sort((a, b) => b.score - a.score);
+    
+    // Return the best match if it has a reasonable score
+    const bestMatch = scored[0];
+    
+    // Require at least some title similarity
+    if (bestMatch &amp;&amp; bestMatch.score >= 30) {
+        return bestMatch;
+    }
+    
+    return null;
+}
+
+/**
+ * Enrich recommendations with TMDB IDs
+ * @param {Array} recommendations - Array of recommendation objects
+ * @returns {Promise&lt;Array>} Enriched recommendations with TMDB IDs
+ */
+async function enrichRecommendationsWithTmdbIds(recommendations) {
+    if (!TMDB_API_KEY) {
+        console.warn('TMDB_API_KEY not provided, returning recommendations without TMDB IDs');
+        return recommendations;
+    }
+
+    const enrichedRecommendations = [];
+    
+    for (const rec of recommendations) {
+        try {
+            // If tmdb_id is null or undefined, try to find it
+            if (!rec.tmdb_id) {
+                const tmdbId = await searchMovieId(rec.title, rec.year);
+                rec.tmdb_id = tmdbId;
+            }
+            
+            enrichedRecommendations.push(rec);
+            
+            // Add a small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 250));
+            
+        } catch (error) {
+            console.error(`Error enriching recommendation ${rec.title}:`, error.message);
+            enrichedRecommendations.push(rec); // Include it even without TMDB ID
+        }
+    }
+    
+    return enrichedRecommendations;
+}
+
+export {
+    searchMovieId,
+    enrichRecommendationsWithTmdbIds
+}; </code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>

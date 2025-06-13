@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>services/recommendationService.js - FilmSage Backend API Documentation</title>
+    
+    <meta name="description" content="Complete API documentation for the FilmSage movie recommendation backend application" />
+    
+        <meta name="keywords" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+        <meta name="keyword" content="FilmSage, API, Backend, Documentation, Movie, Recommendation" />
+    
+    
+    
+    <meta property="og:title" content="FilmSage Backend API Documentation"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    <meta property="og:site_name" content="FilmSage API Docs"/>
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/your-username/filmsage-backend" target="_blank" class="menu-item" id="github_link" >GitHub</a></h2><h3>Modules</h3><ul><li><a href="module-config_db.html">config/db</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_db.html#~connectDB">connectDB</a></li></ul></li><li><a href="module-config_gemini.html">config/gemini</a></li><li><a href="module-config_jwt.html">config/jwt</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~generateToken">generateToken</a></li><li data-type='method' style='display: none;'><a href="module-config_jwt.html#~verifyToken">verifyToken</a></li></ul></li><li><a href="module-controllers_recommendationController.html">controllers/recommendationController</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-controllers_recommendationController.html#~getRecommendations">getRecommendations</a></li></ul></li><li><a href="module-controllers_reviewController.html">controllers/reviewController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-controllers_userInteractionController.html">controllers/userInteractionController</a></li><li><a href="module-middleware_auth.html">middleware/auth</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authenticateToken">authenticateToken</a></li><li data-type='method' style='display: none;'><a href="module-middleware_auth.html#~authorizeRole">authorizeRole</a></li></ul></li><li><a href="module-models_Review.html">models/Review</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-models_UserRating.html">models/UserRating</a></li><li><a href="module-routes_recommendationRoutes.html">routes/recommendationRoutes</a></li><li><a href="module-routes_reviewRoutes.html">routes/reviewRoutes</a></li><li><a href="module-routes_userInteractionRoutes.html">routes/userInteractionRoutes</a></li><li><a href="module-routes_userRoutes.html">routes/userRoutes</a></li><li><a href="module-services_recommendationService.html">services/recommendationService</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-services_recommendationService.html#~getMovieRecommendations">getMovieRecommendations</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">services/recommendationService.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Movie recommendation service module
+ * Provides AI-powered movie recommendations using Google Gemini
+ * @file recommendationService.js
+ * @module services/recommendationService
+ */
+
+import genAI from '../config/gemini.js';
+import { enrichRecommendationsWithTmdbIds } from './tmdbService.js';
+
+/**
+ * Genre mapping from TMDB IDs to names
+ * @constant {Object&lt;number, string>}
+ */
+const GENRE_MAP = {
+    28: 'Action',
+    12: 'Adventure', 
+    16: 'Animation',
+    35: 'Comedy',
+    80: 'Crime',
+    99: 'Documentary',
+    18: 'Drama',
+    10751: 'Family',
+    14: 'Fantasy',
+    36: 'History',
+    27: 'Horror',
+    10402: 'Music',
+    9648: 'Mystery',
+    10749: 'Romance',
+    878: 'Science Fiction',
+    53: 'Thriller',
+    10752: 'War',
+    37: 'Western'
+};
+
+/**
+ * Generates personalized movie recommendations using AI analysis of user reviews
+ * @async
+ * @function getMovieRecommendations
+ * @param {Array} userReviews - Array of user review objects containing title, rating, content, etc.
+ * @param {Array} [favoriteGenres=[]] - Array of favorite genre IDs from TMDB
+ * @returns {Promise&lt;Object>} Object containing recommendations array and metadata
+ * @throws {Error} When no reviews are provided or AI generation fails
+ * @example
+ * const recommendations = await getMovieRecommendations([
+ *   { title: "Inception", rating: 5, content: "Amazing film!" },
+ *   { title: "The Matrix", rating: 4, content: "Great action movie" }
+ * ], [28, 878]); // Action and Sci-Fi genres
+ */
+async function getMovieRecommendations(userReviews, favoriteGenres = []) {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    if (!userReviews || userReviews.length === 0) {
+        throw new Error("No user reviews provided for generating recommendations.");
+    }
+
+    const reviewsData = userReviews;
+    
+    // Convert favorite genre IDs to names
+    const favoriteGenreNames = favoriteGenres.map(id => GENRE_MAP[id]).filter(Boolean);
+
+    // Calculate user statistics
+    const averageRating = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
+    const highRatedReviews = reviewsData.filter(review => review.rating >= 4);
+    const lowRatedReviews = reviewsData.filter(review => review.rating &lt;= 2);
+
+    // Build detailed prompt for AI analysis
+    const favoriteGenresText = favoriteGenreNames.length > 0 
+        ? `User's favorite genres: ${favoriteGenreNames.join(', ')}`
+        : 'No specific favorite genres provided';
+    
+    const prompt = `
+        Act as a movie expert and a movie recommendation system called FilmSage.
+        Analyze the following user reviews to understand their movie tastes and cinematographic preferences:
+
+        USER STATISTICS:
+        - Average rating: ${averageRating.toFixed(1)}/5
+        - High-rated reviews (4-5): ${highRatedReviews.length}
+        - Low-rated reviews (1-2): ${lowRatedReviews.length}
+
+        USER PREFERENCES:
+        - ${favoriteGenresText}
+
+        USER REVIEWS:
+        ${reviewsData.map((review, index) => `
+        ${index + 1}. "${review.title}" (${review.contentType}) - Rating: ${review.rating}/5
+           Review: "${review.content}"
+        `).join('\n')}
+
+        INSTRUCTIONS:
+        1. Analyze the tone and content of each review to identify what elements the user likes or dislikes
+        2. Consider both the numerical rating and the written content of the review
+        3. Pay special attention to the user's favorite genres and give preference to movies in those genres
+        4. Identify patterns in genres, directors, actors, themes, narrative styles, etc.
+        5. Recommend 6 movies that match the identified preferences, prioritizing the user's favorite genres when possible
+        6. DO NOT recommend any movie that the user has already reviewed
+        7. Don't worry about including TMDB IDs - the system will find them automatically
+
+        REQUIRED RESPONSE FORMAT:
+        Your response MUST be only a valid JSON object. DO NOT include explanatory text, markdown, or additional code formatting.
+        The JSON object must have a single key "recommendations" that is an array of objects.
+        Each object in the array must have exactly these keys: "title", "year", and "justification".
+        You can optionally include "tmdb_id" if you're absolutely certain of the ID, otherwise omit it entirely.
+
+        EXACT EXPECTED FORMAT EXAMPLE:
+        {
+          "recommendations": [
+            {
+              "title": "Blade Runner 2049",
+              "year": 2017,
+              "justification": "Based on your positive review of sci-fi films with complex narratives and your appreciation for atmospheric cinematography, this sequel combines impressive visual elements with philosophical depth."
+            },
+            {
+              "title": "The Shawshank Redemption",
+              "year": 1994,
+              "justification": "Considering your positive evaluation of emotional narratives with deep character development, this prison drama offers a moving story about hope and friendship."
+            }
+          ]
+        }
+
+        IMPORTANT: Respond ONLY with the JSON, without additional text or code formatting.
+        ALL JUSTIFICATIONS MUST BE IN ENGLISH.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        console.log("Raw Gemini response:", text);
+        
+        // Extract JSON from the response (handle markdown code blocks)
+        let jsonString = text.trim();
+        
+        // If response is wrapped in markdown code blocks, extract the JSON
+        if (jsonString.includes('```json')) {
+            const jsonMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+            if (jsonMatch) {
+                jsonString = jsonMatch[1].trim();
+            }
+        } else if (jsonString.includes('```')) {
+            // Handle generic code blocks
+            const codeMatch = jsonString.match(/```\s*([\s\S]*?)\s*```/);
+            if (codeMatch) {
+                jsonString = codeMatch[1].trim();
+            }
+        }
+        
+        // Remove any leading/trailing non-JSON text
+        const jsonStart = jsonString.indexOf('{');
+        const jsonEnd = jsonString.lastIndexOf('}');
+        
+        if (jsonStart !== -1 &amp;&amp; jsonEnd !== -1 &amp;&amp; jsonEnd > jsonStart) {
+            jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+        }
+        
+        // Validate that we have JSON-like content
+        if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
+            console.error("Processed response doesn't look like JSON:", jsonString);
+            throw new Error('Invalid response from Gemini - not valid JSON');
+        }
+        
+        const parsedResponse = JSON.parse(jsonString);
+        
+        // Validate the structure
+        if (!parsedResponse.recommendations || !Array.isArray(parsedResponse.recommendations)) {
+            throw new Error('Invalid response structure - missing recommendations array');
+        }
+
+        // Validate each recommendation has required fields
+        for (const rec of parsedResponse.recommendations) {
+            if (!rec.title || !rec.year || !rec.justification) {
+                throw new Error('Invalid recommendation structure - missing required fields (title, year, justification)');
+            }
+            // tmdb_id is optional, but if present should be a number or null
+            if (rec.tmdb_id !== null &amp;&amp; rec.tmdb_id !== undefined &amp;&amp; typeof rec.tmdb_id !== 'number') {
+                console.warn('Warning: tmdb_id should be a number or null, got:', typeof rec.tmdb_id);
+                // Set to null if invalid
+                rec.tmdb_id = null;
+            }
+        }
+        
+        // Enrich recommendations with TMDB IDs if missing
+        console.log('Enriching recommendations with TMDB IDs...');
+        const enrichedRecommendations = await enrichRecommendationsWithTmdbIds(parsedResponse.recommendations);
+        
+        return {
+            ...parsedResponse,
+            recommendations: enrichedRecommendations
+        };
+
+    } catch (error) {
+        console.error("Error getting recommendations from Gemini:", error);
+        throw new Error("Failed to get recommendations: " + error.message);
+    }
+}
+
+export {
+    getMovieRecommendations,
+}; </code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Jun 13 2025 13:48:08 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
